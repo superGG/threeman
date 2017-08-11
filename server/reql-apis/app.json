@@ -1,0 +1,20 @@
+{
+  "apis" : [{
+    "url" : "/user/sendSMSCode",
+    "method" : "user.sendSMSCode",
+    "transaction" : false
+  }, {
+    "url" : "/user/register",
+    "method" : "user.register"
+  }, {
+    "url" : "/user/login",
+    "method" : "user.login"
+  },{
+    "url" : "/user/resetPassword",
+    "method" : "user.resetPassword"
+  },{
+    "url" : "/question/list",
+    "reql" : "query [question : {*}]",
+    "transaction" : false
+  }]
+}

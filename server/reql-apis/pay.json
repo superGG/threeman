@@ -1,0 +1,19 @@
+{
+  "apis" : [{
+	"name" : "支付宝签名",
+	"url" : "/pay/alipay/sign",
+	"method" : "pay.alipaySign"
+  }, {
+	"name" : "支付宝回调",
+	"url" : "/pay/alipay/notify",
+	"method" : "pay.alipayNotify"
+  }, {
+	"name" : "微信签名",
+	"url" : "/pay/wechat/sign",
+	"method" : "pay.wechatSign"
+  }, {
+	"name" : "微信回调",
+	"url" : "/pay/wechat/notify",
+	"method" : "pay.wechatNotify"
+  }]
+}

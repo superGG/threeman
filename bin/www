@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+const path = require('path')
+const slash = require('slash')
+require('../server/config')
+
+const start = require('../server/app')
+
+//初始化项目路径
+global.__project = slash(path.resolve(__dirname, '../'))
+global.__server = slash(path.resolve(__dirname, '../server'))
+
+//启动应用
+start().catch(err => console.error(err))

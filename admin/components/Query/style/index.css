@@ -1,0 +1,9 @@
+.owner-table .ant-pagination.ant-table-pagination{
+    position:absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.owner-table .ant-table{
+    min-height: calc(100vh - 100px)
+}

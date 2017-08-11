@@ -1,0 +1,59 @@
+{
+  "apis" : [{
+    "url" : "/admin/roleList",
+    "reql" : "query [role : {*}]"
+  },{
+    "url" : "/admin/user/list",
+    "reql" : "query [user($dynamic page $page, $pageSize order registerTime desc) : {userId, name, phone,lastLoginTime,registerTime}]",
+    "param" : {
+      "dynamic" :{
+        "default" : "userId>0"
+      }
+    },
+    "comment" : "用户列表"
+  }, {
+    "url" : "/admin/user/list/count",
+    "reql" : "count [user($dynamic order registerTime desc) : {*}]",
+    "param" : {
+      "dynamic" :{
+        "default" : "userId>0"
+      }
+    },
+    "comment" : "用户列表总数"
+  }, {
+    "url" : "/admin/user/all",
+    "reql" : "query [user($dynamic order registerTime desc) : {userId,phone,registerTime}]",
+    "param" : {
+      "dynamic" :{
+        "default" : "userId>0"
+      }
+    },
+    "comment" : "一个时间段内所有注册用户的手机号"
+  },{
+    "url" : "/admin/login",
+    "method" : "user.adminLogin",
+    "comment" : "管理员登陆"
+  }, {
+    "url" : "/admin/updateUser",
+    "reql" : "update {user}",
+    "comment" : "更新用户"
+  },{
+    "url" : "/admin/getUser",
+    "reql" : "query {user(phone=$phone) : {userId,phone,lastLoginTime,registerTime}}",
+    "comment" : "获取用户详情"
+  },{
+    "url" : "/admin/questionList",
+    "reql" : "query [question : {*}]",
+    "comment" : "获取所有问题"
+  },{
+    "url" : "/admin/question/add",
+    "reql" : "add {question}",
+    "comment" : "添加问题"
+  },{
+    "url" : "/admin/question/delete",
+    "reql" : "delete {question}"
+  },{
+    "url" : "/admin/question/update",
+    "reql" : "update {question}"
+  }]
+}
