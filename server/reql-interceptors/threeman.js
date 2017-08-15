@@ -52,19 +52,38 @@ function handOutToPlayer(poker, hasPoker) {
         var i;
         do {
             i = Math.floor(Math.random() * poker.length);
-        } while (dissRepeta(i,hasPoker) == 1); //存在则重新发牌
+        } while (dissRepeta(i, hasPoker) == 1); //存在则重新发牌
         player.push(poker[i])
     }
     return player;
 }
 
 /**
- *
+ * 记录发牌，检测发牌重复；已存在返回1，不存在则记录
  * @param i
  * @param hasPoker
  */
 function dissRepeta(i, hasPoker) {
     return hasPoker.indexOf(i) != -1 ? 1 : hasPoker.push(i);
+}
+
+/**
+ * 发牌
+ * @param playerNumber 闲家人数
+ * @param poker 扑克牌
+ */
+function setPlayer(playerNumber, poker) {
+    if (playerNumber * 3 > poker.length) throw new Error('牌不够发了');
+    var handOutPoker = {}
+    var players = []
+    var hasPoker = []
+    for (var i = 0; i < playerNumber; i++) {
+        players.push(handOutToPlayer(poker, hasPoker));
+    }
+    var banker = handOutToPlayer(poker, hasPoker);
+    handOutPoker.banker = banker;
+    handOutPoker.players = players;
+    return handOutPoker;
 }
 
 // var hasPoker = []
@@ -73,25 +92,25 @@ function dissRepeta(i, hasPoker) {
 // var p3 = handOutToPlayer(poker, hasPoker);
 // var banker = handOutToPlayer(poker, hasPoker);
 
-for (var i=0; i< 1000;i++){
-    hasPoker =[]
-    var p1 = handOutToPlayer(poker, hasPoker);
-    var p2 = handOutToPlayer(poker, hasPoker);
-    var p3 = handOutToPlayer(poker, hasPoker);
-    var banker = handOutToPlayer(poker, hasPoker);
-    var result_1 = compare(p1,banker);
-    var result_2 = compare(p2,banker);
-    var result_3 = compare(p3,banker);
-    console.log("-------------------------------------------完美分割线------------------------------------------")
-    console.log("the player1's poker is :"+JSON.stringify(p1)+" ,and the result is : " + JSON.stringify(count(p1)));
-    console.log("the player2's poker is :"+JSON.stringify(p2)+" ,and the result is : " + JSON.stringify(count(p2)));
-    console.log("the player3's poker is :"+JSON.stringify(p3)+" ,and the result is : " + JSON.stringify(count(p3)));
-    console.log("the banker's poker is :"+JSON.stringify(banker)+" ,and the result is : " + JSON.stringify(count(banker)));
-    console.log(`玩家1 与 庄家比牌结果，赢家${result_1.winner},倍率为${result_1.times}`)
-    console.log(`玩家2 与 庄家比牌结果，赢家${result_2.winner},倍率为${result_2.times}`)
-    console.log(`玩家3 与 庄家比牌结果，赢家${result_3.winner},倍率为${result_3.times}`)
-    console.log("发牌数：" + hasPoker)
-}
+// for (var i=0; i< 1000;i++){
+//     hasPoker =[]
+//     var p1 = handOutToPlayer(poker, hasPoker);
+//     var p2 = handOutToPlayer(poker, hasPoker);
+//     var p3 = handOutToPlayer(poker, hasPoker);
+//     var banker = handOutToPlayer(poker, hasPoker);
+//     var result_1 = compare(p1,banker);
+//     var result_2 = compare(p2,banker);
+//     var result_3 = compare(p3,banker);
+//     console.log("-------------------------------------------完美分割线------------------------------------------")
+//     console.log("the player1's poker is :"+JSON.stringify(p1)+" ,and the result is : " + JSON.stringify(count(p1)));
+//     console.log("the player2's poker is :"+JSON.stringify(p2)+" ,and the result is : " + JSON.stringify(count(p2)));
+//     console.log("the player3's poker is :"+JSON.stringify(p3)+" ,and the result is : " + JSON.stringify(count(p3)));
+//     console.log("the banker's poker is :"+JSON.stringify(banker)+" ,and the result is : " + JSON.stringify(count(banker)));
+//     console.log(`玩家1 与 庄家比牌结果，赢家${result_1.winner},倍率为${result_1.times}`)
+//     console.log(`玩家2 与 庄家比牌结果，赢家${result_2.winner},倍率为${result_2.times}`)
+//     console.log(`玩家3 与 庄家比牌结果，赢家${result_3.winner},倍率为${result_3.times}`)
+//     console.log("发牌数：" + hasPoker)
+// }
 
 
 /**
