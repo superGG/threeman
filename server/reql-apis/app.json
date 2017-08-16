@@ -9,6 +9,9 @@
   }, {
     "url" : "/user/login",
     "method" : "user.login"
+  }, {
+    "url" : "/user/update",
+    "reql" : "update {user}"
   },{
     "url" : "/user/resetPassword",
     "method" : "user.resetPassword"

@@ -74,6 +74,7 @@ exports.register = async function ({param, data, session, cache}) {
 	data.password = addSalt(data.password)
     //记录用户注册时间
 	data.registerTime = new Date();
+	data.name = phone
 	const user = await session.addUser(data)
 	return {
 		userId : user.userId
