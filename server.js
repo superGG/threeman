@@ -1,19 +1,34 @@
-const webpack = require('webpack');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const config = require('./webpack.dev.config');
 const path = require('path');
+const express = require('express');
 
-const app = new (require('express'))();
+const app = new express();
 const port = 3000;
 
-const compiler = webpack(config);
-app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output.publicPath }));
-app.use(webpackHotMiddleware(compiler));
+app.use(express.static("public"));
 
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, "pages", 'login.html'));
 });
+
+app.get('/register', (req, res) => {
+
+  res.sendFile(path.join(__dirname, "pages", "register.html"));
+})
+
+app.get("/set_user_info", (req, res) => {
+
+  res.sendFile(path.join(__dirname, "pages", "userInfoSet.html"));
+})
+
+app.get("/userInfo", (req, res) => {
+
+  res.sendFile(path.join(__dirname, "pages", "userInfo.html"));
+})
+
+app.get("/waitRoom", (req, res) => {
+
+  res.sendFile(path.join(__dirname, "pages", "waitRoom.html"))
+})
 
 app.listen(port, (error) => {
   if (error) {
