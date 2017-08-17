@@ -6,10 +6,7 @@ const port = 3000;
 
 app.use(express.static("public"));
 
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
-
-server.listen(80);
+const io = require('socket.io')();
 
 app.get('/', function (req, res) {
   res.sendfile(__dirname + '/index.html');
@@ -59,3 +56,5 @@ app.listen(port, (error) => {
     console.info('==> Listening on port %s. Open up http://localhost:%s/ in your browser.', port, port);
 }
 });
+
+io.listen(2727);
