@@ -29,7 +29,7 @@ const start = async () => {
 	app.use(route.get('/admin*', async ctx => {
 		ctx.type = 'html';
 		ctx.body = fs.createReadStream(path.join(__dirname, '../admin/index.html'))
-	}))
+	}));
 	app.use(bodyParser({
         jsonLimit: '5mb', // 控制body的parse转换大小 default 1mb
         formLimit: '4096mb'  //  控制你post的大小  default 56kb

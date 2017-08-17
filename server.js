@@ -6,6 +6,23 @@ const port = 3000;
 
 app.use(express.static("public"));
 
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+
+server.listen(80);
+
+app.get('/', function (req, res) {
+  res.sendfile(__dirname + '/index.html');
+});
+
+io.on('connection', function (socket) {
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
+});
+
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, "pages", 'login.html'));
 });
@@ -29,6 +46,11 @@ app.get("/waitRoom", (req, res) => {
 
   res.sendFile(path.join(__dirname, "pages", "waitRoom.html"))
 })
+
+app.get("/socket", (req, res) => {
+
+  res.sendFile(path.join(__dirname, "socketTest.html"))
+});
 
 app.listen(port, (error) => {
   if (error) {
