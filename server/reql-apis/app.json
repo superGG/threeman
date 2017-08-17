@@ -9,6 +9,9 @@
   }, {
     "url" : "/user/login",
     "method" : "user.login"
+  }, {
+    "url" : "/user/update",
+    "reql" : "update {user}"
   },{
     "url" : "/user/resetPassword",
     "method" : "user.resetPassword"
@@ -16,5 +19,9 @@
     "url" : "/question/list",
     "reql" : "query [question : {*}]",
     "transaction" : false
+  },{
+    "url" : "/user/getUserInfoById",
+    "reql" : "query {user(userId = $userId) : {userId,name,phone,image,interal,lastLoginTime,registerTime}}",
+    "comment" : "根据用户Id获取用户信息"
   }]
 }

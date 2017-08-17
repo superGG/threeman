@@ -26,6 +26,7 @@
     },
     "interal" : {
       "type" : "double",
+      "default" : 0,
       "comment" : "积分"
     },
     "lastLoginTime": {

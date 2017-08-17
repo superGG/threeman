@@ -17,6 +17,8 @@ const reql = require('reql-koa')
 
 const YuanData = require('yuan-data')
 
+const socket = require('./reql-interceptors/socket')
+
 const app = new Koa()
 
 const start = async () => {
@@ -28,15 +30,25 @@ const start = async () => {
 		ctx.type = 'html';
 		ctx.body = fs.createReadStream(path.join(__dirname, '../admin/index.html'))
 	}))
-	app.use(bodyParser())
+	app.use(bodyParser({
+        jsonLimit: '5mb', // 控制body的parse转换大小 default 1mb
+        formLimit: '4096mb'  //  控制你post的大小  default 56kb
+
+    }))
 
 	let yuanData = YuanData.create(config.reql)
 	await yuanData.connect()
 
 	app.use(await reql(yuanData, config['reql-api']))
 
+	var server = require('http').createServer(app.callback())
+	var io = require('socket.io').listen(server)
+	socket.start(io)
+
+
 	console.info(`server listen port on ${config.server.port}`)
-	app.listen(config.server.port)
+	// app.listen(config.server.port)
+    server.listen(config.server.port)
 }
 
 module.exports = start
