@@ -1,4 +1,6 @@
-let poker = [
+
+
+exports.poker = [
     {"number": 1, "color": 1}, {"number": 2, "color": 1}, {"number": 3, "color": 1}, {
         "number": 4,
         "color": 1
@@ -69,10 +71,10 @@ function dissRepeta(i, hasPoker) {
 
 /**
  * 发牌
- * @param playerNumber 闲家人数
+ * @param playerNumber 人数
  * @param poker 扑克牌
  */
-function setPlayer(playerNumber, poker) {
+exports.setPlayer = (playerNumber, poker) => {
     if (playerNumber * 3 > poker.length) throw new Error('牌不够发了');
     var handOutPoker = {}
     var players = []
@@ -80,37 +82,12 @@ function setPlayer(playerNumber, poker) {
     for (var i = 0; i < playerNumber; i++) {
         players.push(handOutToPlayer(poker, hasPoker));
     }
-    var banker = handOutToPlayer(poker, hasPoker);
-    handOutPoker.banker = banker;
+    // var banker = handOutToPlayer(poker, hasPoker);
+    // handOutPoker.banker = banker;  //没有庄家
     handOutPoker.players = players;
     return handOutPoker;
 }
 
-// var hasPoker = []
-// var p1 = handOutToPlayer(poker, hasPoker);
-// var p2 = handOutToPlayer(poker, hasPoker);
-// var p3 = handOutToPlayer(poker, hasPoker);
-// var banker = handOutToPlayer(poker, hasPoker);
-
-// for (var i=0; i< 1000;i++){
-//     hasPoker =[]
-//     var p1 = handOutToPlayer(poker, hasPoker);
-//     var p2 = handOutToPlayer(poker, hasPoker);
-//     var p3 = handOutToPlayer(poker, hasPoker);
-//     var banker = handOutToPlayer(poker, hasPoker);
-//     var result_1 = compare(p1,banker);
-//     var result_2 = compare(p2,banker);
-//     var result_3 = compare(p3,banker);
-//     console.log("-------------------------------------------完美分割线------------------------------------------")
-//     console.log("the player1's poker is :"+JSON.stringify(p1)+" ,and the result is : " + JSON.stringify(count(p1)));
-//     console.log("the player2's poker is :"+JSON.stringify(p2)+" ,and the result is : " + JSON.stringify(count(p2)));
-//     console.log("the player3's poker is :"+JSON.stringify(p3)+" ,and the result is : " + JSON.stringify(count(p3)));
-//     console.log("the banker's poker is :"+JSON.stringify(banker)+" ,and the result is : " + JSON.stringify(count(banker)));
-//     console.log(`玩家1 与 庄家比牌结果，赢家${result_1.winner},倍率为${result_1.times}`)
-//     console.log(`玩家2 与 庄家比牌结果，赢家${result_2.winner},倍率为${result_2.times}`)
-//     console.log(`玩家3 与 庄家比牌结果，赢家${result_3.winner},倍率为${result_3.times}`)
-//     console.log("发牌数：" + hasPoker)
-// }
 
 
 /**
@@ -135,21 +112,22 @@ function count(poker) {
     }
     result.number = Number(result.number) % 10;
     //计算手牌倍数
-    if (result.man == 3) {
-        if (poker[0].number == poker[1].number && poker[1].number == poker[2].number) {
-            result.rank = 9;  //大三公 9倍
-        } else {
-            result.rank = 5;  //混三公  5倍
-        }
-    } else {
-        if (poker[0].number == poker[1].number && poker[1].number == poker[2].number) {
-            result.rank = 7; //小三公  7倍
-        } else if(result.number == 8 || result.number == 9) {
-            result.rank = 3;  //特点数  3倍
-        } else {
-            result.rank = 1; //单点数 1倍
-        }
-    }
+    result.man == 3 ? result.rank = 5 : result.rank = 1;
+    // if (result.man == 3) {
+    //     if (poker[0].number == poker[1].number && poker[1].number == poker[2].number) {
+    //         result.rank = 9;  //大三公 9倍
+    //     } else {
+    //         result.rank = 5;  //混三公  5倍
+    //     }
+    // } else {
+    //     if (poker[0].number == poker[1].number && poker[1].number == poker[2].number) {
+    //         result.rank = 7; //小三公  7倍
+    //     } else if(result.number == 8 || result.number == 9) {
+    //         result.rank = 3;  //特点数  3倍
+    //     } else {
+    //         result.rank = 1; //单点数 1倍
+    //     }
+    // }
     return result;
 }
 
