@@ -65,7 +65,7 @@ exports.start = async function (sockets) {
                 console.log( user.name + "加入" + roomId +"房间")
                 var result = {result:true,room}
                 sockets.to(roomId).emit('joinRoom', result);
-                socket.emit('joinRoom', {result:true, message:"用户加入成功"});
+                // socket.emit('joinRoom', {result:true, message:"用户加入成功"});
             }
         })
 
@@ -85,7 +85,7 @@ exports.start = async function (sockets) {
                 var result = {result:true,leaveUser:user}
                 console.log(user.name + "离开了房间")
                 sockets.to(roomId).emit('leaveRoom', result);
-                socket.emit('leaveRoom', {result:true, message:"该用户离开了房间"});
+                // socket.emit('leaveRoom', {result:true, message:"该用户离开了房间"});
             }
         })
 
@@ -106,14 +106,17 @@ exports.start = async function (sockets) {
          */
         socket.on('readyGame',function (date) {
             var {roomId,user} = data;
-            var room = roomList[roomId]
-            if (room != null) {
+            // var room = roomList[roomId]
+            if (roomList[roomId] != null) {
                 if (!checkUser(user)) {
                     socket.emit('readyGame', {result:false, message:"该用户没有加入房间"});
                     return;
                 }
                 roomList[roomId].userList[user.userId].ready = true
-
+                if (isStartGame(roomList[roomId])) {  //判断是否可以直接开始游戏
+                    sockets.to(roomId).emit('startGame', {room:roomList[roomId]});
+                    return;
+                }
                 var result = {result:true,readyUser:user,room:roomList[roomId]}
                 console.log(roomId+"房间的"+user.name + "准备开始游戏")
                 sockets.to(roomId).emit('readyGame', result);
@@ -164,6 +167,19 @@ function checkUser(user) {
         if(userList.hasOwnProperty(user.userId)) result = true;
     }
     return result;
+}
+
+/**
+ * 判断是否可以开始游戏
+ * @param room
+ */
+function isStartGame(room) {
+    var users = room.userList;
+    for(var userId in users) {
+        var user = users[userId];
+        if (!user.ready) return false; //只要有一个没有准备，都不能开始
+    }
+    return true;
 }
 
 
