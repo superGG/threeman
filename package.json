@@ -33,6 +33,7 @@
     "moment": "^2.18.1",
     "mysql2": "^1.2.0",
     "node-schedule": "^1.2.1",
+    "node-uuid": "^1.4.8",
     "redis": "^2.7.1",
     "reql-koa": "0.0.9",
     "slash": "^1.0.0",
