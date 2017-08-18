@@ -1,6 +1,6 @@
 var baseUrl = "http://192.168.0.102:8080";
 var serverUrl = baseUrl + "/api/";
-var socket = "http://localhost:3000";
+var socketUrl = "http://192.168.0.102:8080";
 
 var checkInputVal = function(vals) {
 
@@ -77,3 +77,22 @@ var xhrOnProgress=function(fun) {
     return xhr;
   }
 }
+
+var merge = function() {
+
+  console.log(arguments)
+
+  var argArr = Array.prototype.slice.call(arguments);
+
+  return argArr.reduce(function(total, item) {
+
+    for(var p in item) {
+
+      total[p] = item[p]
+    }
+
+    return total;
+  })
+
+
+};
