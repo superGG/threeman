@@ -1,5 +1,6 @@
-
-
+/**
+ * 扑克牌，number为1-13. color 1-4分别为：黑桃、红心、梅花、方块
+ */
 exports.poker = [
     {"number": 1, "color": 1}, {"number": 2, "color": 1}, {"number": 3, "color": 1}, {
         "number": 4,
@@ -131,33 +132,35 @@ function count(poker) {
     // }
     return result;
 }
+exports.count = count();
 
 /**
  * 比牌
  * @param player 玩家1
  * @param banker 玩家2
  */
-exports.compare = (player, banker) => {
-    var b_result = count(banker);
-    var p_result = count(player);
+function compare(player, banker){
+    var b_result = player.result;
+    var p_result = banker.result;
     if(b_result.rank == p_result.rank){ //等级一样
         if (b_result.number == p_result.number){ //点数一样
             if (b_result.man == p_result.man) {     //公牌数 一样
                 if(b_result.mix.number == p_result.mix.number) { //最大一张牌的大小一样
-                   return b_result.mix.color < p_result.mix.color ?  false : true;
+                   return b_result.mix.color < p_result.mix.color ?  -1 : 1;
                 } else {//最大一张牌的大小不一样， 大的赢
-                   return b_result.mix.number > p_result.mix.number ?   false : true;
+                   return b_result.mix.number > p_result.mix.number ?    -1 : 1;
                 }
             } else { //公派数不一样， 公牌数多的赢
-                return b_result.man > p_result.man ?   false : true;
+                return b_result.man > p_result.man ?    -1 : 1;
             }
         } else {  //点数不一样，点数大的赢
-            return b_result.number > p_result.number ?   false : true;
+            return b_result.number > p_result.number ?    -1 : 1;
         }
     } else {  //等级不一样,等级大的赢
-        return b_result.rank > p_result.rank ?   false : true;
+        return b_result.rank > p_result.rank ?    -1 : 1;
     }
 }
+exports.compare = compare();
 
 /**
  * 与庄家比牌(旧的)

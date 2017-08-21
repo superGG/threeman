@@ -165,7 +165,12 @@ exports.start = async function (sockets) {
             }
         })
 
+        socket.on('compare',function (data) {
+            var {roomId, userList} = data;
+            count(userList);
+            sockets.to(roomId).emit('cancleReady', result);
 
+        })
 
 
 
@@ -201,6 +206,48 @@ function isAllReady(room) {
         if (!user.ready) return false; //只要有一个没有准备，都不能开始
     }
     return true;
+}
+
+function objectToArray(userList) {
+    var userArray = [];
+    for (var i in userList) {
+        userArray.push(userList[i])
+    }
+    return userArray;
+}
+
+/**
+ * 计算结果
+ * @param userList
+ */
+function count(userList) {
+    for (var userId in userList) {
+        userList[userId].result = threeman.count(userList[userId].poker)
+    }
+    //给玩家的牌排序
+    var userArray = objectToArray(userList).sort(threeman.compare);
+    //计算玩家下注总金额
+    var sum_money = userArray.reduce((all, current) => all+current.ready,0);
+
+    //计算玩家从下注池中获得的金额
+    userArray.forEach(user=>{
+        if (sum_money>0) {
+            if ((sum_money - user.ready)>0){
+                if((sum_money - 2*user.ready)>0){ //玩家可以获得下注池中 自己本金的2倍
+                    user.result.count = user.ready;
+                    sum_money = sum_money - 2*user.ready;
+                } else {  //下注池的最后一部分，除了玩家本金还有余
+                    user.result.count = sum_money - user.ready; //正数
+                    sum_money = 0;
+                }
+            } else {  // 下注池的最后一部分，不够玩家本金
+                user.result.count = sum_money - user.ready; //负数
+                sum_money = 0;
+            }
+        } else { //下注池已经没金额
+            user.result.count = -user.ready;
+        }
+    })
 }
 
 
