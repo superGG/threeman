@@ -102,25 +102,46 @@ exports.start = async function (sockets) {
         })
 
         /**
-         * 准备游戏
+         * 开始游戏
          */
-        socket.on('readyGame',function (date) {
-            var {roomId,user} = data;
+        socket.on('startGame', function (data) {
+            var roomId = data.roomId;
+            sockets.to(roomId).emit('startGame', {room:roomList[roomId]});
+        })
+
+        /**
+         * 设置房间最低筹码
+         */
+        socket.on('setMinChip',function (data) {
+            var {roomId,minChip} = data;
+            if (roomList[roomId] == null) socket.emit('setMinChip',{result:false,message:'没有该房间'})
+            roomList[roomId].minChip = minChip;
+            console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
+            socket.emit('setMinChip',{result:true,message:'设置成功'})
+        })
+
+        /**
+         * 下注
+         */
+        socket.on('bet',function (date) {
+            var {roomId,user,money} = data;
             // var room = roomList[roomId]
             if (roomList[roomId] != null) {
                 if (!checkUser(user)) {
                     socket.emit('readyGame', {result:false, message:"该用户没有加入房间"});
                     return;
                 }
-                roomList[roomId].userList[user.userId].ready = true
-                if (isStartGame(roomList[roomId])) {  //判断是否可以直接开始游戏
-                    sockets.to(roomId).emit('startGame', {room:roomList[roomId]});
+                if (money < roomList[roomId].minChip) socket.emit('bet',{result:false,message:"不能低于最低下注筹码"})
+                    roomList[roomId].userList[user.userId].ready = money;
+                console.log(roomId+"房间的"+user.name + "下注money元")
+                if (isAllReady(roomList[roomId])) {  //判断是否可以发牌
+                    threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
+                    console.log(roomId+"房间的玩家已经全部下注，可以开始发牌")
+                    sockets.to(roomId).emit('deal', {room:roomList[roomId]});
                     return;
                 }
-                var result = {result:true,readyUser:user,room:roomList[roomId]}
-                console.log(roomId+"房间的"+user.name + "准备开始游戏")
-                sockets.to(roomId).emit('readyGame', result);
-                socket.emit('readyGame', {result:true, message:"准备成功"});
+                var result = {result:true,readyUser:user,money:money}
+                sockets.to(roomId).emit('bet', result);
             }
         })
 
@@ -173,7 +194,7 @@ function checkUser(user) {
  * 判断是否可以开始游戏
  * @param room
  */
-function isStartGame(room) {
+function isAllReady(room) {
     var users = room.userList;
     for(var userId in users) {
         var user = users[userId];

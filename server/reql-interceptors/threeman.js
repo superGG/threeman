@@ -71,21 +71,22 @@ function dissRepeta(i, hasPoker) {
 
 /**
  * 发牌
- * @param playerNumber 人数
+ * @param userList 玩家列表
  * @param poker 扑克牌
  */
-exports.setPlayer = (playerNumber, poker) => {
-    if (playerNumber * 3 > poker.length) throw new Error('牌不够发了');
-    var handOutPoker = {}
-    var players = []
+exports.setPlayer = (userList, poker) => {
+    if (userList.length * 3 > poker.length) throw new Error('牌不够发了');
     var hasPoker = []
-    for (var i = 0; i < playerNumber; i++) {
-        players.push(handOutToPlayer(poker, hasPoker));
+    // for (var i = 0; i < playerNumber; i++) {
+    //     players.push(handOutToPlayer(poker, hasPoker));
+    // }
+    for (var i in userList) {
+        // var user = userList[i];
+        userList[i].poker = handOutToPlayer(poker, hasPoker);
     }
     // var banker = handOutToPlayer(poker, hasPoker);
     // handOutPoker.banker = banker;  //没有庄家
-    handOutPoker.players = players;
-    return handOutPoker;
+    return userList;
 }
 
 
