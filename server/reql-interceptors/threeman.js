@@ -133,11 +133,38 @@ function count(poker) {
 }
 
 /**
- * 与庄家比牌
+ * 比牌
+ * @param player 玩家1
+ * @param banker 玩家2
+ */
+exports.compare = (player, banker) => {
+    var b_result = count(banker);
+    var p_result = count(player);
+    if(b_result.rank == p_result.rank){ //等级一样
+        if (b_result.number == p_result.number){ //点数一样
+            if (b_result.man == p_result.man) {     //公牌数 一样
+                if(b_result.mix.number == p_result.mix.number) { //最大一张牌的大小一样
+                   return b_result.mix.color < p_result.mix.color ?  false : true;
+                } else {//最大一张牌的大小不一样， 大的赢
+                   return b_result.mix.number > p_result.mix.number ?   false : true;
+                }
+            } else { //公派数不一样， 公牌数多的赢
+                return b_result.man > p_result.man ?   false : true;
+            }
+        } else {  //点数不一样，点数大的赢
+            return b_result.number > p_result.number ?   false : true;
+        }
+    } else {  //等级不一样,等级大的赢
+        return b_result.rank > p_result.rank ?   false : true;
+    }
+}
+
+/**
+ * 与庄家比牌(旧的)
  * @param player
  * @param banker
  */
-function compare(player, banker) {
+function old_compare(player, banker) {
     var result = {}
     var b_result = count(banker);
     var p_result = count(player);
