@@ -2,6 +2,7 @@
  * Created by Kellan on 2017/8/17.
  */
 const threeman = require('../reql-interceptors/threeman')
+const axios = require('axios')
 const UUID = require('node-uuid')
 
 
@@ -10,7 +11,7 @@ const poker = threeman.poker
 
 var connectionList = {};
 var roomList = {};
-exports.start = async function (sockets) {
+exports.start = async function (sockets, yuanData) {
     sockets.on('connection', function (socket) {
         //客户端连接时，保存socketId
         var socketId = socket.id;
@@ -28,44 +29,54 @@ exports.start = async function (sockets) {
          * 创建房间
          */
         socket.on('createRoom',function (data) {
-            var user = data.user
-            if (checkUser(user)) {
-                socket.emit('createRoom', {result:false, message:"用户已经加入别的房间"});
-                return;
+            try {
+                var user = data.user
+                if (checkUser(user)) {
+                    socket.emit('createRoom', {result: false, message: "用户已经加入别的房间"});
+                    return;
+                }
+                var room = {};
+                room.userList = {};
+                room.roomId = UUID.v1();
+                room.minChip = 50;
+                room.userList[user.userId] = user;
+                room.userList[user.userId].ready = false;
+                room.userList[user.userId].bet = 0;
+                room.poker = poker;
+                socket.join(room.roomId)
+                roomList[room.roomId] = room;
+                var result = {result: true, room}
+                console.log(user.name + "用户创建" + room.roomId + "房间")
+                // sockets.to(room.roomId).emit('test', result);
+                sockets.to(room.roomId).emit('createRoom', result);
+            } catch (e) {
+                console.log(e)
             }
-            var room = {};
-            room.userList = {};
-            room.roomId = UUID.v1();
-            room.userList[user.userId] = user;
-            room.userList[user.userId].ready = false;
-            room.poker = poker;
-            socket.join(room.roomId)
-            roomList[room.roomId] = room;
-            var result = {result:true,room}
-            console.log(user.name+"用户创建"+room.roomId+"房间")
-            // sockets.to(room.roomId).emit('test', result);
-            sockets.to(room.roomId).emit('createRoom', result);
         });
 
         /**
          * 加入房间
          */
         socket.on('joinRoom',function (data) {
-            var {roomId,user} = data
-            var room = roomList[roomId]
-            if (room != null) {
-                if (checkUser(user)) {
-                    socket.emit('joinRoom', {result:false, message:"用户已经加入别的房间"});
-                    return;
+            try {
+                var {roomId, user} = data
+                if (roomList[roomId] != null) {
+                    if (checkUser(user)) {
+                        socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
+                        return;
+                    }
+                    if (user.interal < roomList[roomId].minChip) {
+                        socket.emit('joinRoom', {result: false, message: "该用户的积分不够"});
+                        return;
+                    }
+                    roomList[roomId].userList[user.userId] = user;
+                    roomList[roomId].userList[user.userId].ready = false;
+                    socket.join(roomId)
+                    console.log(user.name + "加入" + roomId + "房间")
+                    sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
                 }
-                room.userList[user.userId] = user;
-                room.userList[user.userId].ready = false;
-                socket.join(roomId)
-                // console.log(roomList)
-                console.log( user.name + "加入" + roomId +"房间")
-                var result = {result:true,room}
-                sockets.to(roomId).emit('joinRoom', result);
-                // socket.emit('joinRoom', {result:true, message:"用户加入成功"});
+            } catch (e) {
+                console.log(e)
             }
         })
 
@@ -73,19 +84,20 @@ exports.start = async function (sockets) {
          * 离开房间
          */
         socket.on('leaveRoom',function (data) {
-            var {roomId,user} = data
-            var room = roomList[roomId]
-            if (room != null) {
-                if (!checkUser(user)) {
-                    socket.emit('leaveRoom', {result:false, message:"该用户没有加入房间"});
-                    return;
+            try {
+                var {roomId, user} = data
+                if (roomList[roomId] != null) {
+                    if (!checkUser(user)) {
+                        socket.emit('leaveRoom', {result: false, message: "该用户没有加入房间"});
+                        return;
+                    }
+                    delete roomList[roomId].userList[user.userId]
+                    socket.leave(roomId)
+                    console.log(user.name + "离开了房间")
+                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
                 }
-                delete roomList[roomId].userList[user.userId]
-                socket.leave(roomId)
-                var result = {result:true,leaveUser:user}
-                console.log(user.name + "离开了房间")
-                sockets.to(roomId).emit('leaveRoom', result);
-                // socket.emit('leaveRoom', {result:true, message:"该用户离开了房间"});
+            } catch (e) {
+                console.log(e)
             }
         })
 
@@ -93,55 +105,76 @@ exports.start = async function (sockets) {
          * 关闭房间
          */
         socket.on('closeRoom', function (data) {
-            var roomId = data.roomId;
-            delete roomList[roomId];
-            socket.leave(roomId)
-            console.log(roomId+"房间关闭")
-            socket.emit('closeRoom',{result:true,message:"房主关闭房间"})
-            sockets.to(roomId).emit('closeRoom',{result:true,message:"房主关闭房间"})
+            try {
+                var roomId = data.roomId;
+                delete roomList[roomId];
+                socket.leave(roomId)
+                console.log(roomId + "房间关闭")
+                sockets.to(roomId).emit('closeRoom', {result: true, message: "房主关闭房间"})
+            } catch (e) {
+                console.log(e)
+            }
         })
 
         /**
          * 开始游戏
          */
         socket.on('startGame', function (data) {
+            try {
+                var roomId = data.roomId;
+                console.log(`${roomId}房间的玩家上桌，准备开始游戏`)
+                sockets.to(roomId).emit('startGame', {result: true, message: "游戏开始，上桌...."});
+            } catch (e) {
+                console.log(e)
+            }
+        })
+
+        /**
+         * 获取房间信息
+         */
+        socket.on('roomInfo',function (data) {
             var roomId = data.roomId;
-            sockets.to(roomId).emit('startGame', {room:roomList[roomId]});
+            socket.emit('roomInfo', {result:true, room:roomList[roomId]});
         })
 
         /**
          * 设置房间最低筹码
          */
         socket.on('setMinChip',function (data) {
-            var {roomId,minChip} = data;
-            if (roomList[roomId] == null) socket.emit('setMinChip',{result:false,message:'没有该房间'})
-            roomList[roomId].minChip = minChip;
-            console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
-            socket.emit('setMinChip',{result:true,message:'设置成功'})
+            try {
+                var {roomId, minChip} = data;
+                if (roomList[roomId] == null) socket.emit('setMinChip', {result: false, message: '没有该房间'})
+                roomList[roomId].minChip = minChip;
+                console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
+                socket.emit('setMinChip', {result: true, message: '设置成功'})
+            } catch (e) {
+                console.log(e)
+            }
         })
 
         /**
-         * 下注
+         * 准备游戏
          */
-        socket.on('bet',function (date) {
-            var {roomId,user,money} = data;
-            // var room = roomList[roomId]
-            if (roomList[roomId] != null) {
-                if (!checkUser(user)) {
-                    socket.emit('readyGame', {result:false, message:"该用户没有加入房间"});
-                    return;
+        socket.on('readyGame',function (date) {
+            try {
+                var {roomId, user} = data;
+                if (roomList[roomId] != null) {
+                    if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
+                        socket.emit('readyGame', {result: false, message: "该用户没有加入房间"});
+                        return;
+                    }
+                    roomList[roomId].userList[user.userId].ready = true;
+
+                    console.log(roomId + "房间的" + user.name + "准备游戏")
+                    if (isAllReady(roomList[roomId])) {  //判断是否可以发牌
+                        console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
+                        sockets.to(roomId).emit('readyGame', {room: roomList[roomId]});
+                        return;
+                    }
+                    sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
                 }
-                if (money < roomList[roomId].minChip) socket.emit('bet',{result:false,message:"不能低于最低下注筹码"})
-                    roomList[roomId].userList[user.userId].ready = money;
-                console.log(roomId+"房间的"+user.name + "下注money元")
-                if (isAllReady(roomList[roomId])) {  //判断是否可以发牌
-                    threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
-                    console.log(roomId+"房间的玩家已经全部下注，可以开始发牌")
-                    sockets.to(roomId).emit('deal', {room:roomList[roomId]});
-                    return;
-                }
-                var result = {result:true,readyUser:user,money:money}
-                sockets.to(roomId).emit('bet', result);
+            } catch (e) {
+                console.log(e)
             }
         })
 
@@ -150,32 +183,100 @@ exports.start = async function (sockets) {
          */
         socket.on('cancleReady',function (date) {
             var {roomId,user} = data;
-            var room = roomList[roomId]
-            if (room != null) {
-                if (!checkUser(user)) {
+            if (roomList[roomId] != null) {
+                if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
                     socket.emit('cancleReady', {result:false, message:"该用户没有加入房间"});
                     return;
                 }
                 roomList[roomId].userList[user.userId].ready = false
-
-                var result = {result:true,readyUser:user,room:roomList[roomId]}
                 console.log(roomId+"房间的"+user.name + "取消准备")
-                sockets.to(roomId).emit('cancleReady', result);
-                socket.emit('cancleReady', {result:true, message:"取消准备成功"});
+                sockets.to(roomId).emit('cancleReady', {result:true,cancleReadyUser:user,room:roomList[roomId]});
             }
         })
 
-        socket.on('compare',function (data) {
-            var {roomId, userList} = data;
-            count(userList);
-            sockets.to(roomId).emit('cancleReady', result);
+        /**
+         * 下注
+         */
+        socket.on('bet',function (date) {
+            try {
+                var {roomId, user, money} = data;
+                if (roomList[roomId] != null) {
+                    if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
+                        socket.emit('bet', {result: false, message: "该用户没有加入房间"});
+                        return;
+                    }
+                    if (money < roomList[roomId].minChip) socket.emit('bet', {result: false, message: "不能低于最低下注筹码"})
+                    roomList[roomId].userList[user.userId].bet = money;
 
+                    console.log(`${roomId}房间的${user.name}下注${money}元`)
+                    if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
+                        threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
+                        console.log(roomId + "房间的玩家已经全部下注，可以开始发牌")
+                        sockets.to(roomId).emit('deal', {room: roomList[roomId]});
+                        return;
+                    }
+                    sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
+                }
+            } catch (e) {
+                console.log(e)
+            }
         })
 
+        /**
+         * 计算结果
+         */
+        socket.on('compare', async (data ,yuanData) => {
+            try {
+                var {roomId, userList} = data;
+                let session = await yuanData.createSession();
+                var userArray = await count(userList);
 
+                //更新用户数据
+                await Promise.all(userArray.map(user =>
+                    session.update(`update {user}`,{userId:user.userId, interal:(user.interal+user.reault.count)})))
 
-    })
+                sockets.to(roomId).emit('compare', {userArray});
+            } catch (e) {
+                console.log(e)
+            }
+        });
 
+        /**
+         * 结束本轮游戏，准备下一轮
+         */
+        socket.on('endGame',function (data) {
+            console.log(`${data.roomId}房间的本轮游戏结束`)
+            //初始化改房间所有人的信息
+            initGame(data.roomId);
+            sockets.to(data.roomId).emit('endGame',{result:true,message:"结束本轮游戏"})
+        })
+
+        /**
+         * 房主关闭游戏
+         */
+        socket.on('closeGame',function (data) {
+            console.log(`${data.roomId}房间的房主关闭游戏`)
+            //初始化改房间所有人的信息
+            initGame(data.roomId);
+            socket.to(data.roomId).emit('closeGame',{result:true,message:"房主关闭游戏"})
+        })
+
+    });
+
+}
+
+/**
+ * 初始化改房间所有人的信息
+ * @param roomId
+ */
+function initGame(roomId) {
+    var userList = roomList[roomId].userList
+    for (var userId in userList) {
+        delete userList[userId].result;
+        delete userList[userId].poker;
+        userList[userId].ready = false;
+        userList[userId].bet = 0;
+    }
 }
 
 
@@ -196,7 +297,7 @@ function checkUser(user) {
 }
 
 /**
- * 判断是否可以开始游戏
+ * 判断是否可以开始下注（全部准备）
  * @param room
  */
 function isAllReady(room) {
@@ -208,6 +309,23 @@ function isAllReady(room) {
     return true;
 }
 
+/**
+ * 判断是否可以开始游戏 （全部下注）
+ * @param room
+ */
+function isAllBet(room) {
+    var userList = room.userList;
+    for(var userId in userList) {
+        var user = userList[userId];
+        if (user.bet <= 0) return false; //只要有一个没有下注，都不能开始
+    }
+    return true;
+}
+
+/**
+ * 将list转成array
+ * @param userList
+ */
 function objectToArray(userList) {
     var userArray = [];
     for (var i in userList) {
@@ -221,33 +339,39 @@ function objectToArray(userList) {
  * @param userList
  */
 function count(userList) {
-    for (var userId in userList) {
-        userList[userId].result = threeman.count(userList[userId].poker)
-    }
+    //计算每个玩家的牌型大小
+    var userArray = objectToArray(userList).forEach(user=>{
+        user.result = threeman.count(user.poker)
+    })
+
     //给玩家的牌排序
-    var userArray = objectToArray(userList).sort(threeman.compare);
+    userArray.sort(threeman.compare);
     //计算玩家下注总金额
-    var sum_money = userArray.reduce((all, current) => all+current.ready,0);
+    var sum_money = userArray.reduce((all, current) => all+current.bet,0);
 
     //计算玩家从下注池中获得的金额
     userArray.forEach(user=>{
         if (sum_money>0) {
-            if ((sum_money - user.ready)>0){
-                if((sum_money - 2*user.ready)>0){ //玩家可以获得下注池中 自己本金的2倍
-                    user.result.count = user.ready;
-                    sum_money = sum_money - 2*user.ready;
+            if ((sum_money - user.bet)>0){
+                if((sum_money - 2*user.bet)>0){ //玩家可以获得下注池中 自己本金的2倍
+                    user.result.count = user.bet;
+                    sum_money = sum_money - 2*user.bet;
                 } else {  //下注池的最后一部分，除了玩家本金还有余
-                    user.result.count = sum_money - user.ready; //正数
+                    user.result.count = sum_money - user.bet; //正数
                     sum_money = 0;
                 }
             } else {  // 下注池的最后一部分，不够玩家本金
-                user.result.count = sum_money - user.ready; //负数
+                user.result.count = sum_money - user.bet; //负数
                 sum_money = 0;
             }
         } else { //下注池已经没金额
-            user.result.count = -user.ready;
+            user.result.count = -user.bet;
         }
     })
+    return userArray;
 }
 
+updateData = async(userArray, session) => {
+
+}
 

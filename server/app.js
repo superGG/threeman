@@ -50,8 +50,7 @@ const start = async() => {
     //建立socket通信
     var server = require('http').createServer(app.callback())
     var io = require('socket.io').listen(server)
-    await socket.start(io.sockets)
-
+    await socket.start(io.sockets,yuanData)
 
     console.info(`server listen port on ${config.server.port}`)
     // app.listen(config.server.port)
