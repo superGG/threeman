@@ -103,25 +103,46 @@ exports.start = async function (sockets) {
         })
 
         /**
-         * 准备游戏
+         * 开始游戏
          */
-        socket.on('readyGame',function (date) {
-            var {roomId,user} = data;
+        socket.on('startGame', function (data) {
+            var roomId = data.roomId;
+            sockets.to(roomId).emit('startGame', {room:roomList[roomId]});
+        })
+
+        /**
+         * 设置房间最低筹码
+         */
+        socket.on('setMinChip',function (data) {
+            var {roomId,minChip} = data;
+            if (roomList[roomId] == null) socket.emit('setMinChip',{result:false,message:'没有该房间'})
+            roomList[roomId].minChip = minChip;
+            console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
+            socket.emit('setMinChip',{result:true,message:'设置成功'})
+        })
+
+        /**
+         * 下注
+         */
+        socket.on('bet',function (date) {
+            var {roomId,user,money} = data;
             // var room = roomList[roomId]
             if (roomList[roomId] != null) {
                 if (!checkUser(user)) {
                     socket.emit('readyGame', {result:false, message:"该用户没有加入房间"});
                     return;
                 }
-                roomList[roomId].userList[user.userId].ready = true
-                if (isStartGame(roomList[roomId])) {  //判断是否可以直接开始游戏
-                    sockets.to(roomId).emit('startGame', {room:roomList[roomId]});
+                if (money < roomList[roomId].minChip) socket.emit('bet',{result:false,message:"不能低于最低下注筹码"})
+                    roomList[roomId].userList[user.userId].ready = money;
+                console.log(roomId+"房间的"+user.name + "下注money元")
+                if (isAllReady(roomList[roomId])) {  //判断是否可以发牌
+                    threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
+                    console.log(roomId+"房间的玩家已经全部下注，可以开始发牌")
+                    sockets.to(roomId).emit('deal', {room:roomList[roomId]});
                     return;
                 }
-                var result = {result:true,readyUser:user,room:roomList[roomId]}
-                console.log(roomId+"房间的"+user.name + "准备开始游戏")
-                sockets.to(roomId).emit('readyGame', result);
-                socket.emit('readyGame', {result:true, message:"准备成功"});
+                var result = {result:true,readyUser:user,money:money}
+                sockets.to(roomId).emit('bet', result);
             }
         })
 
@@ -145,7 +166,12 @@ exports.start = async function (sockets) {
             }
         })
 
+        socket.on('compare',function (data) {
+            var {roomId, userList} = data;
+            count(userList);
+            sockets.to(roomId).emit('cancleReady', result);
 
+        })
 
 
 
@@ -174,13 +200,55 @@ function checkUser(user) {
  * 判断是否可以开始游戏
  * @param room
  */
-function isStartGame(room) {
+function isAllReady(room) {
     var users = room.userList;
     for(var userId in users) {
         var user = users[userId];
         if (!user.ready) return false; //只要有一个没有准备，都不能开始
     }
     return true;
+}
+
+function objectToArray(userList) {
+    var userArray = [];
+    for (var i in userList) {
+        userArray.push(userList[i])
+    }
+    return userArray;
+}
+
+/**
+ * 计算结果
+ * @param userList
+ */
+function count(userList) {
+    for (var userId in userList) {
+        userList[userId].result = threeman.count(userList[userId].poker)
+    }
+    //给玩家的牌排序
+    var userArray = objectToArray(userList).sort(threeman.compare);
+    //计算玩家下注总金额
+    var sum_money = userArray.reduce((all, current) => all+current.ready,0);
+
+    //计算玩家从下注池中获得的金额
+    userArray.forEach(user=>{
+        if (sum_money>0) {
+            if ((sum_money - user.ready)>0){
+                if((sum_money - 2*user.ready)>0){ //玩家可以获得下注池中 自己本金的2倍
+                    user.result.count = user.ready;
+                    sum_money = sum_money - 2*user.ready;
+                } else {  //下注池的最后一部分，除了玩家本金还有余
+                    user.result.count = sum_money - user.ready; //正数
+                    sum_money = 0;
+                }
+            } else {  // 下注池的最后一部分，不够玩家本金
+                user.result.count = sum_money - user.ready; //负数
+                sum_money = 0;
+            }
+        } else { //下注池已经没金额
+            user.result.count = -user.ready;
+        }
+    })
 }
 
 
