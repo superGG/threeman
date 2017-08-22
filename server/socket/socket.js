@@ -72,7 +72,7 @@ exports.start = async function (sockets) {
         /**
          * 离开房间
          */
-        socket.on('leaveRoom',function (data) {
+        socket.on('leaveRoom',function (data, fn) {
             var {roomId,user} = data
             var room = roomList[roomId]
             if (room != null) {
@@ -85,7 +85,8 @@ exports.start = async function (sockets) {
                 var result = {result:true,leaveUser:user}
                 console.log(user.name + "离开了房间")
                 sockets.to(roomId).emit('leaveRoom', result);
-                // socket.emit('leaveRoom', {result:true, message:"该用户离开了房间"});
+
+                fn({result:true, message:"该用户离开了房间"})
             }
         })
 

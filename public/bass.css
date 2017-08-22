@@ -29,3 +29,7 @@ body{
   font-size: 18px;
   font-weight: normal;
 }
+
+.page__bd_spacing {
+  padding: 15px;
+}
