@@ -132,7 +132,7 @@ function count(poker) {
     // }
     return result;
 }
-exports.count = count();
+exports.count = count;
 
 /**
  * 比牌
@@ -160,7 +160,7 @@ function compare(player, banker){
         return b_result.rank > p_result.rank ?    -1 : 1;
     }
 }
-exports.compare = compare();
+exports.compare = compare;
 
 /**
  * 与庄家比牌(旧的)

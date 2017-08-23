@@ -109,5 +109,26 @@
       "type" : "string",
       "comment" : "下载链接"
     }
+  },
+  "record" : {
+    "recordId" : {
+      "type" : "int",
+      "primaryKey" : true,
+      "autoIncrement" : true
+    },
+    "interal" : {
+      "type" :"int",
+      "default" : 0,
+      "comment" :"积分"
+    },
+    "way" : {
+      "type" : "enum",
+      "values" : ["充值", "打牌"],
+      "default" : "打牌"
+    },
+    "createTime" : {
+      "type" :"date",
+      "default" :"now"
+    }
   }
 }
