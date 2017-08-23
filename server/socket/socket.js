@@ -155,7 +155,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 准备游戏
          */
-        socket.on('readyGame',function (date) {
+        socket.on('readyGame',function (data) {
             try {
                 var {roomId, user} = data;
                 if (roomList[roomId] != null) {
@@ -181,7 +181,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 取消准备游戏
          */
-        socket.on('cancleReady',function (date) {
+        socket.on('cancleReady',function (data) {
             var {roomId,user} = data;
             if (roomList[roomId] != null) {
                 if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
@@ -197,7 +197,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 下注
          */
-        socket.on('bet',function (date) {
+        socket.on('bet',function (data) {
             try {
                 var {roomId, user, money} = data;
                 if (roomList[roomId] != null) {
