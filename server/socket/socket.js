@@ -233,9 +233,9 @@ exports.start = async function (sockets, yuanData) {
 
                                 //更新用户数据
                                 await Promise.all(userArray.map(user =>
-                                    session.excute(`update {user}`, {
+                                    session.execute(`update {user}`, {
                                         userId: user.userId,
-                                        interal: (user.interal + user.result.count)
+                                        interal: (Number(user.interal) + user.result.count)
                                     })
                                 ));
                                 sockets.to(roomId).emit('compare', {userArray});
