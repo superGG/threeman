@@ -6,7 +6,6 @@ const axios = require('axios')
 const UUID = require('node-uuid')
 
 
-
 const poker = threeman.poker
 
 var connectionList = {};
@@ -28,7 +27,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 创建房间
          */
-        socket.on('createRoom',function (data) {
+        socket.on('createRoom', function (data) {
             try {
                 var user = data.user
                 if (checkUser(user)) {
@@ -57,7 +56,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 加入房间
          */
-        socket.on('joinRoom',function (data) {
+        socket.on('joinRoom', function (data) {
             try {
                 var {roomId, user} = data
                 if (roomList[roomId] != null) {
@@ -65,7 +64,7 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
                         return;
                     }
-                    if (roomList[roomId].start){
+                    if (roomList[roomId].start) {
                         socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏"});
                         return;
                     }
@@ -88,7 +87,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 离开房间
          */
-        socket.on('leaveRoom',function (data) {
+        socket.on('leaveRoom', function (data) {
             try {
                 var {roomId, user} = data
                 if (roomList[roomId] != null) {
@@ -138,19 +137,19 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 获取房间信息
          */
-        socket.on('roomInfo',function (data) {
+        socket.on('roomInfo', function (data) {
             var roomId = data.roomId;
             var user = data.user;
-            if(roomList[roomId].userList.hasOwnProperty(user.userId)) {
-              socket.join(roomId);
+            if (roomList[roomId].userList.hasOwnProperty(user.userId)) {
+                socket.join(roomId);
             }
-            socket.emit('roomInfo', {result:true, room:roomList[roomId]});
+            socket.emit('roomInfo', {result: true, room: roomList[roomId]});
         })
 
         /**
          * 设置房间最低筹码
          */
-        socket.on('setMinChip',function (data) {
+        socket.on('setMinChip', function (data) {
             try {
                 var {roomId, minChip} = data;
                 if (roomList[roomId] == null) socket.emit('setMinChip', {result: false, message: '没有该房间'})
@@ -165,7 +164,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 准备游戏
          */
-        socket.on('readyGame',function (data) {
+        socket.on('readyGame', function (data) {
             try {
                 var {roomId, user} = data;
                 if (roomList[roomId] != null) {
@@ -191,23 +190,23 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 取消准备游戏
          */
-        socket.on('cancleReady',function (data) {
-            var {roomId,user} = data;
+        socket.on('cancleReady', function (data) {
+            var {roomId, user} = data;
             if (roomList[roomId] != null) {
                 if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
-                    socket.emit('cancleReady', {result:false, message:"该用户没有加入房间"});
+                    socket.emit('cancleReady', {result: false, message: "该用户没有加入房间"});
                     return;
                 }
                 roomList[roomId].userList[user.userId].ready = false
-                console.log(roomId+"房间的"+user.name + "取消准备")
-                sockets.to(roomId).emit('cancleReady', {result:true,cancleReadyUser:user});
+                console.log(roomId + "房间的" + user.name + "取消准备")
+                sockets.to(roomId).emit('cancleReady', {result: true, cancleReadyUser: user});
             }
         })
 
         /**
          * 下注
          */
-        socket.on('bet',function (data) {
+        socket.on('bet', async(data,yuanData) => {
             try {
                 var {roomId, user, money} = data;
                 if (roomList[roomId] != null) {
@@ -216,14 +215,36 @@ exports.start = async function (sockets, yuanData) {
                         return;
                     }
                     if (money < roomList[roomId].minChip) socket.emit('bet', {result: false, message: "不能低于最低下注筹码"})
+                    if (money > user.interal) socket.emit('bet', {result: false, message: "不能高于自身积分"})
                     roomList[roomId].userList[user.userId].bet = money;
 
                     console.log(`${roomId}房间的${user.name}下注${money}元`)
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
-                  if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
+                    if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
+                        //发牌
                         threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
                         console.log(roomId + "房间的玩家已经全部下注，可以开始发牌")
                         sockets.to(roomId).emit('deal', {room: roomList[roomId]});
+                        //5秒后显示结果
+                        try {
+                            await setTimeout(async() => {
+                                let session = await yuanData.createSession();
+                                var userArray = count(roomList[roomId].userList);
+
+                                //更新用户数据
+                                await Promise.all(userArray.map(user =>
+                                    session.update(`update {user}`, {
+                                        userId: user.userId,
+                                        interal: (user.interal + user.reault.count)
+                                    })
+                                ));
+                                sockets.to(roomId).emit('compare', {userArray});
+                                console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
+                            }, 5000);
+                        } catch (err) {
+                            console.log("The calculation results err")
+                            console.log(err)
+                        }
                         return;
                     }
                 }
@@ -235,23 +256,29 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 计算结果
          */
-        socket.on('compare', async (data ,yuanData) => {
+        socket.on('compare', async(data, yuanData) => {
             try {
-                var {roomId, userList} = data;
-                let session = await yuanData.createSession();
-                var userArray = await count(userList);
+                if (!roomList[roomId].count) { //该轮游戏没有计算结果
+                    var {roomId, userList} = data;
+                    let session = await yuanData.createSession();
+                    var userArray = count(userList);
 
-                //更新用户数据
-                await Promise.all(userArray.map(user =>
-                    session.update(`update {user}`,{userId:user.userId, interal:(user.interal+user.reault.count)})
-                ));
-                //积分记录
-                // await Promise.all(userArray.map(user =>
-                //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
-                // ));
-                sockets.to(roomId).emit('compare', {userArray});
+                    //更新用户数据
+                    await Promise.all(userArray.map(user =>
+                        session.update(`update {user}`, {
+                            userId: user.userId,
+                            interal: (user.interal + user.reault.count)
+                        })
+                    ));
+                    //积分记录
+                    // await Promise.all(userArray.map(user =>
+                    //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
+                    // ));
+                    roomList[roomId].count = true;
+                    sockets.to(roomId).emit('compare', {userArray});
+                }
             } catch (e) {
-                console.log("")
+                console.log("The calculation results err")
                 console.log(e)
             }
         });
@@ -259,22 +286,22 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 结束本轮游戏，准备下一轮
          */
-        socket.on('endGame',function (data) {
+        socket.on('endGame', function (data) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             initGame(data.roomId);
-            sockets.to(data.roomId).emit('endGame',{result:true,message:"结束本轮游戏"})
+            sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏"})
         })
 
         /**
          * 房主关闭游戏
          */
-        socket.on('closeGame',function (data) {
+        socket.on('closeGame', function (data) {
             console.log(`${data.roomId}房间的房主关闭游戏`)
             //初始化改房间所有人的信息
             initGame(data.roomId);
             roomList[data.roomId].start = false;
-            socket.to(data.roomId).emit('closeGame',{result:true,message:"房主关闭游戏"})
+            socket.to(data.roomId).emit('closeGame', {result: true, message: "房主关闭游戏"})
         })
 
     });
@@ -307,7 +334,7 @@ function checkUser(user) {
     for (var roomId in roomList) {
         var userList = roomList[roomId].userList
         if (userList == null) continue;
-        if(userList.hasOwnProperty(user.userId)) result = true;
+        if (userList.hasOwnProperty(user.userId)) result = true;
     }
     return result;
 }
@@ -318,7 +345,7 @@ function checkUser(user) {
  */
 function isAllReady(room) {
     var users = room.userList;
-    for(var userId in users) {
+    for (var userId in users) {
         var user = users[userId];
         if (!user.ready) return false; //只要有一个没有准备，都不能开始
     }
@@ -331,7 +358,7 @@ function isAllReady(room) {
  */
 function isAllBet(room) {
     var userList = room.userList;
-    for(var userId in userList) {
+    for (var userId in userList) {
         var user = userList[userId];
         if (user.bet <= 0) return false; //只要有一个没有下注，都不能开始
     }
@@ -350,28 +377,42 @@ function objectToArray(userList) {
     return userArray;
 }
 
+
+compare = async(roomId, userList) => {
+    let session = await yuanData.createSession();
+    var userArray = await count(userList);
+
+    //更新用户数据
+    await Promise.all(userArray.map(user => session.update(`update {user}`, {userId: user.userId, interal: (user.interal + user.reault.count)})));
+        //积分记录
+        // await Promise.all(userArray.map(user =>
+        //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
+        // ));
+    sockets.to(roomId).emit('compare', {userArray});
+}
+
 /**
  * 计算结果
  * @param userList
  */
 function count(userList) {
     //计算每个玩家的牌型大小
-    var userArray = objectToArray(userList).forEach(user=>{
+    var userArray = objectToArray(userList).forEach(user => {
         user.result = threeman.count(user.poker)
     })
 
     //给玩家的牌排序
     userArray.sort(threeman.compare);
     //计算玩家下注总金额
-    var sum_money = userArray.reduce((all, current) => all+current.bet,0);
+    var sum_money = userArray.reduce((all, current) => all + current.bet, 0);
 
     //计算玩家从下注池中获得的金额
-    userArray.forEach(user=>{
-        if (sum_money>0) {
-            if ((sum_money - user.bet)>0){
-                if((sum_money - 2*user.bet)>0){ //玩家可以获得下注池中 自己本金的2倍
+    userArray.forEach(user => {
+        if (sum_money > 0) {
+            if ((sum_money - user.bet) > 0) {
+                if ((sum_money - 2 * user.bet) > 0) { //玩家可以获得下注池中 自己本金的2倍
                     user.result.count = user.bet;
-                    sum_money = sum_money - 2*user.bet;
+                    sum_money = sum_money - 2 * user.bet;
                 } else {  //下注池的最后一部分，除了玩家本金还有余
                     user.result.count = sum_money - user.bet; //正数
                     sum_money = 0;
