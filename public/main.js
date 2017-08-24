@@ -50,9 +50,6 @@
         '<div class="poker__a" style="background-image:url(/poker/' + pokerSrc +');"></div></div>';
     });
 
-    setTimeout(function() {
-      $(".poker__out").addClass('active');
-    }, 3000);
 
     return pokerStr;
   };
@@ -72,7 +69,7 @@
 
       var readyStr = userList[p].ready  ? '准备中' : '未准备';
 
-      userStr = userStr + '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
+      userStr = '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
         + '<div class="avatar"><img src="'+ baseUrl + userList[p].avatar +'" alt=""></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
         + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
@@ -233,7 +230,22 @@
 
   socket.on('deal', function(data) {
 
+    var loading = weui.loading("发牌中，请稍等...");
     renderUserInfo(data.room.userList)
+
+    setTimeout(function() {
+
+      loading.hide()
+      setTimeout(function() {
+        $(".poker__out").addClass('active');
+      }, 3000);
+
+    }, 3000)
+  });
+
+  socket.on('compare', function(data) {
+
+    console.log(data);
   });
 
 

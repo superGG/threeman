@@ -146,7 +146,6 @@
     .my .chip .money {
         background: #ac3014;
         color: #f1ec25;
-        width: 80px;
     }
 
     .poker img{
@@ -199,6 +198,8 @@
         background: #bf451c;
         padding: 5px;
         display: none;
+        width: 80px;
+        z-index: 1;
     }
 
     .other .player .pokerBg {

@@ -206,7 +206,7 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 下注
          */
-        socket.on('bet', async(data,yuanData) => {
+        socket.on('bet', async(data) => {
             try {
                 var {roomId, user, money} = data;
                 if (roomList[roomId] != null) {
@@ -233,9 +233,9 @@ exports.start = async function (sockets, yuanData) {
 
                                 //更新用户数据
                                 await Promise.all(userArray.map(user =>
-                                    session.update(`update {user}`, {
+                                    session.excute(`update {user}`, {
                                         userId: user.userId,
-                                        interal: (user.interal + user.reault.count)
+                                        interal: (user.interal + user.result.count)
                                     })
                                 ));
                                 sockets.to(roomId).emit('compare', {userArray});
@@ -397,14 +397,15 @@ compare = async(roomId, userList) => {
  */
 function count(userList) {
     //计算每个玩家的牌型大小
-    var userArray = objectToArray(userList).forEach(user => {
-        user.result = threeman.count(user.poker)
+    var userArray = objectToArray(userList).map(user => {
+      user.result = threeman.count(user.poker)
+      return user;
     })
 
     //给玩家的牌排序
     userArray.sort(threeman.compare);
     //计算玩家下注总金额
-    var sum_money = userArray.reduce((all, current) => all + current.bet, 0);
+    var sum_money = userArray.reduce((all, current) => all + Number(current.bet), 0);
 
     //计算玩家从下注池中获得的金额
     userArray.forEach(user => {
