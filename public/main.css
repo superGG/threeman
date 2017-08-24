@@ -21,7 +21,7 @@
     body{
         width : 100% ;
         height : 100% ;
-        background: url("./public/bg.png") no-repeat center;
+        background: url("/bg.png") no-repeat center;
         background-size: cover;
     }
     #print{
@@ -40,7 +40,26 @@
         margin-left: 20px;
     }
 
-    .my .userInfo, .poker {
+    .my .option ul {
+        list-style: none;
+        font-size: 14px;
+        width: 400px;
+        display: block;
+        margin: 0 auto;
+        padding: 20px 10px;
+        background: rgba(0,0,0,0.8);
+        border-radius: 5px;
+    }
+
+    .my .option ul li {
+        padding: 5px 10px;
+        display: inline-block;
+        background: #e08f20;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    .my .userInfo, .my .poker {
         float: left;
     }
 
@@ -49,9 +68,9 @@
         background: rgba(0, 0, 0, 0.6);
         color: #fff;
         font-weight: bold;
-        padding: 10px;
+        padding: 5px;
         border-radius: 10px;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .my .userInfo .info {
@@ -70,16 +89,66 @@
     }
 
     .my .userInfo .avatar {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         float: left;
+        overflow: hidden;
     }
 
     .my .userInfo .avatar img {
         width: 100%;
     }
 
-    .my .poker img{
+    .my .out_icon {
+        float: right;
+        margin-right: 30px;
+        vertical-align: top;
+        line-height: 21px;
+        color: #fff;
+    }
+
+    .my .out_icon img {
+        width: 20px;
+        float: right;
+    }
+
+    .my .option {
+        position: absolute;
+        bottom: 0;
+        color: #fff;
+        width: 100%;
+        display: none;
+    }
+
+    .my .chip {
+        display: none;
+        margin-right: 30px;
+        vertical-align: top;
+        line-height: 21px;
+        color: #fff;
+        position: absolute;
+        right: 60px;
+        font-size: 14px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 5px;
+    }
+
+    .my .chip {
+        background: rgba(0, 0, 0, 0.8);
+        padding: 5px;
+    }
+
+    .my .chip h4 {
+        margin: 0;
+        font-size: 12px;
+    }
+
+    .my .chip .money {
+        background: #ac3014;
+        color: #f1ec25;
+    }
+
+    .poker img{
         height: 80px;
     }
 
@@ -116,6 +185,21 @@
     .other .player {
     }
 
+    .other .player .ready {
+        color: #fff;
+    }
+
+    .other .player .money {
+        font-size: 12px;
+        position: absolute;
+        left: 65px;
+        bottom: -10px;
+        color: #fffc48;
+        background: #bf451c;
+        padding: 5px;
+        display: none;
+    }
+
     .other .player .pokerBg {
         float: left;
         margin-left: 40px;
@@ -144,6 +228,7 @@
         width: 40px;
         height: 40px;
         margin-left: 9px;
+        overflow: hidden;
     }
 
 
@@ -161,4 +246,178 @@
     height: 0;
     width: 0;
     clear: both;
+}
+
+.result_alert {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    display: none;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.result_alert #close-result {
+    position: absolute;
+    font-size: 16px;
+    display: block;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    border: 1px solid #fff;
+    border-radius: 15px;
+    right: 10px;
+    font-family: sans-serif;
+}
+
+.result_alert .modal {
+    background: rgba(35, 87, 191, 0.8);
+    margin: 0 auto;
+    padding: 5px;
+    color: #fff;
+    width: 500px;
+    margin-top: 10px;
+    position: relative;
+}
+
+.result_alert .modal h3 {
+    text-align: center;
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #fff;
+    padding-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 12px;
+    text-align: center;
+    color: #a5e9ff;
+}
+
+.subtitle .count {
+    color: #ff8f8f;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.content {
+    background: #2b2b63;
+    overflow: hidden;
+}
+
+.item {
+    margin-top: 10px;
+    display: inline-block;
+    margin-right: 30px;
+}
+
+.item .poker {
+    display: inline-block;
+    margin-left:24px;
+}
+
+.item .poker img {
+    height: 40px;
+    margin-left: -22px;
+}
+
+.item .poker .poker_img {
+    height: 50px;
+    width: 37px;
+    background-image: url("/poker.png");
+    background-position: 75px 100px;
+    background-size: 229px 469px;
+}
+
+.item .ranking {
+    font-size: 30px;
+    line-height: 40px;
+    vertical-align: top;
+}
+
+.item .chip {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.item .type, .item .name {
+    line-height: 40px;
+    vertical-align: top;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.item .ready {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    color: #eadd0d;
+    font-weight: bold;
+}
+
+.item .name {
+    font-size: 20px;
+    color: #a5e9ff;
+}
+
+.item .chip .deal {
+    color: #a5e9ff;
+}
+
+.item .chip .add {
+    color: #ffd83a;
+}
+
+.other .poker__out{
+    width: 40px;
+    height: 60px;
+    margin: 0 auto;
+    float: left;
+    margin-left: -25px;
+}
+
+.other .poker__out div{
+    width: 40px;
+    height: 60px;
+    position: absolute;
+    transform-style: preserve-3d;
+    backface-visibility:hidden;
+    transition:all 2s;
+    background-size:cover;
+}
+
+.my .poker__out {
+    width: 60px;
+    height: 80px;
+    margin: 0 auto;
+    float: left;
+}
+
+.my .poker__out div {
+    width: 60px;
+    height: 80px;
+    position: absolute;
+    transform-style: preserve-3d;
+    backface-visibility:hidden;
+    transition:all 2s;
+    background-size:cover;
+}
+
+.poker__bg{
+    background: url("/poker/pokerBg.png");
+    transform:rotateY(0);
+}
+.poker__a{
+    background: url("/poker/1_0.png") no-repeat;
+    transform:rotateY(-180deg);
+}
+.poker__out.active .poker__bg{
+    transform:rotateY(-180deg);
+}
+.poker__out.active .poker__a{
+    transform:rotateY(0deg);
 }

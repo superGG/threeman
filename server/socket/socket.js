@@ -134,6 +134,10 @@ exports.start = async function (sockets, yuanData) {
          */
         socket.on('roomInfo',function (data) {
             var roomId = data.roomId;
+            var user = data.user;
+            if(roomList[roomId].userList.hasOwnProperty(user.userId)) {
+              socket.join(roomId);
+            }
             socket.emit('roomInfo', {result:true, room:roomList[roomId]});
         })
 
@@ -168,7 +172,7 @@ exports.start = async function (sockets, yuanData) {
 
                     if (isAllReady(roomList[roomId])) {  //判断是否可以下注
                         console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
-                        sockets.to(roomId).emit('readyGame', {room: roomList[roomId]});
+                        sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
                     }
                     sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
@@ -209,13 +213,13 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].userList[user.userId].bet = money;
 
                     console.log(`${roomId}房间的${user.name}下注${money}元`)
-                    if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
+                    sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
+                  if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
                         threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
                         console.log(roomId + "房间的玩家已经全部下注，可以开始发牌")
                         sockets.to(roomId).emit('deal', {room: roomList[roomId]});
                         return;
                     }
-                    sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
                 }
             } catch (e) {
                 console.log(e)

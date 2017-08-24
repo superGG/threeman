@@ -10,6 +10,7 @@
     <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.js"></script>
     <script src="js/tool.js"></script>
     <script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.2/weui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
     <style>
         .page__hd {
             padding: 40px;
@@ -27,6 +28,19 @@
             text-align: left;
             font-size: 14px;
         }
+
+        .site {
+            background-image: url(./kw.png);
+        }
+
+        .weui-cells {
+            margin-top: 1.17647059em;
+            background-color: #FFFFFF;
+            line-height: 1.47058824;
+            font-size: 17px;
+            overflow: hidden;
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -43,7 +57,19 @@
                 </a>
             </div>
         </div>
-
+        <div class="weui-cells">
+            <div class="weui-cell weui-cell_vcode">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">房间号连接</label>
+                </div>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" type="text" id="room_code" placeholder="房间号生成中">
+                </div>
+                <div class="weui-cell__ft">
+                    <button class="weui-vcode-btn">复制房间号</button>
+                </div>
+            </div>
+        </div>
         <div class="weui-cells weui-cells_form">
             <div class="weui-cell">
                 <div class="weui-cell__bd">
@@ -54,17 +80,38 @@
                         </div>
                         <div class="weui-uploader__bd">
                             <ul class="weui-uploader__files" id="uploaderFiles">
-                                <li class="weui-uploader__file" style="background-image:url(./kw.png)"></li>
-                                <li class="weui-uploader__file" style="background-image:url(./kw.png)"></li>
-                                <li class="weui-uploader__file" style="background-image:url(./kw.png)"></li>
-                                <li class="weui-uploader__file" style="background-image:url(./kw.png)"></li>
-                                <li class="weui-uploader__file" style="background-image:url(./kw.png)"></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
                             </ul>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
+        <div class="weui-cells__title">选择最低筹码</div>
+        <div class="weui-cells">
+            <div class="weui-cell weui-cell_select">
+                <div class="weui-cell__bd">
+                    <select class="weui-select" name="select1">
+                        <option selected="" value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="page__bd page__bd_spacing">
+            <a href="javascript:;" id="start" class="weui-btn weui-btn_primary">开始游戏</a>
+            <a href="javascript:;" id="close" class="weui-btn weui-btn_default">关闭房间</a>
+            <a href="javascript:;" id="cancel" class="weui-btn weui-btn_default">离开房间</a>
+        </div>
     </div>
+
 </body>
+<script src="js/waitRoom.js"></script>
 </html>

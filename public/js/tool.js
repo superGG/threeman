@@ -1,6 +1,7 @@
-var baseUrl = "http://192.168.0.102:8080";
+var baseUrl = "http://localhost:8080";
 var serverUrl = baseUrl + "/api/";
-var socket = "http://localhost:3000";
+var socketUrl = "http://localhost:8080";
+var testUrl = "http://localhost:3000";
 
 var checkInputVal = function(vals) {
 
@@ -29,7 +30,7 @@ var checkVal = function(val, rules) {
 
 var errorServer = function (data) {
 
-  if(data.error) {
+  if(data.error || data.result === false) {
     weui.topTips(data.message);
     return true;
   }
@@ -77,3 +78,22 @@ var xhrOnProgress=function(fun) {
     return xhr;
   }
 }
+
+var merge = function() {
+
+  console.log(arguments)
+
+  var argArr = Array.prototype.slice.call(arguments);
+
+  return argArr.reduce(function(total, item) {
+
+    for(var p in item) {
+
+      total[p] = item[p]
+    }
+
+    return total;
+  })
+
+
+};
