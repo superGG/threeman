@@ -37,11 +37,12 @@ exports.start = async function (sockets, yuanData) {
                 }
                 var room = {};
                 room.userList = {};
-                room.roomId = UUID.v1();
-                room.minChip = 50;
+                room.roomId = UUID.v1(); //房间id
+                room.minChip = 50;          //房间最低下注金额
+                room.start = false;     //房间游戏状态
                 room.userList[user.userId] = user;
-                room.userList[user.userId].ready = false;
-                room.userList[user.userId].bet = 0;
+                room.userList[user.userId].ready = false;   //玩家准备状态
+                room.userList[user.userId].bet = 0;         //玩家下注金额
                 room.poker = poker;
                 socket.join(room.roomId)
                 roomList[room.roomId] = room;
@@ -62,6 +63,10 @@ exports.start = async function (sockets, yuanData) {
                 if (roomList[roomId] != null) {
                     if (checkUser(user)) {
                         socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
+                        return;
+                    }
+                    if (roomList[roomId].start){
+                        socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏"});
                         return;
                     }
                     if (user.interal < roomList[roomId].minChip) {
@@ -122,6 +127,7 @@ exports.start = async function (sockets, yuanData) {
         socket.on('startGame', function (data) {
             try {
                 var roomId = data.roomId;
+                roomList[roomId].start = true;
                 console.log(`${roomId}房间的玩家上桌，准备开始游戏`)
                 sockets.to(roomId).emit('startGame', {result: true, message: "游戏开始，上桌...."});
             } catch (e) {
@@ -267,6 +273,7 @@ exports.start = async function (sockets, yuanData) {
             console.log(`${data.roomId}房间的房主关闭游戏`)
             //初始化改房间所有人的信息
             initGame(data.roomId);
+            roomList[data.roomId].start = false;
             socket.to(data.roomId).emit('closeGame',{result:true,message:"房主关闭游戏"})
         })
 
