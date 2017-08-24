@@ -146,6 +146,7 @@
     .my .chip .money {
         background: #ac3014;
         color: #f1ec25;
+        width: 80px;
     }
 
     .poker img{

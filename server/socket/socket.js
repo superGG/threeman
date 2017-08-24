@@ -70,7 +70,7 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId] = user;
                     roomList[roomId].userList[user.userId].ready = false;
-                    room.userList[user.userId].bet = 0;
+                    roomList[roomId].userList[user.userId].bet = 0;
                     socket.join(roomId)
                     console.log(user.name + "加入" + roomId + "房间")
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
