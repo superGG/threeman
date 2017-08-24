@@ -120,6 +120,34 @@
         display: none;
     }
 
+    .my .chip {
+        display: none;
+        margin-right: 30px;
+        vertical-align: top;
+        line-height: 21px;
+        color: #fff;
+        position: absolute;
+        right: 60px;
+        font-size: 14px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 5px;
+    }
+
+    .my .chip {
+        background: rgba(0, 0, 0, 0.8);
+        padding: 5px;
+    }
+
+    .my .chip h4 {
+        margin: 0;
+        font-size: 12px;
+    }
+
+    .my .chip .money {
+        background: #ac3014;
+        color: #f1ec25;
+    }
+
     .poker img{
         height: 80px;
     }
@@ -155,6 +183,21 @@
     }
 
     .other .player {
+    }
+
+    .other .player .ready {
+        color: #fff;
+    }
+
+    .other .player .money {
+        font-size: 12px;
+        position: absolute;
+        left: 65px;
+        bottom: -10px;
+        color: #fffc48;
+        background: #bf451c;
+        padding: 5px;
+        display: none;
     }
 
     .other .player .pokerBg {
@@ -327,4 +370,54 @@
 
 .item .chip .add {
     color: #ffd83a;
+}
+
+.other .poker__out{
+    width: 40px;
+    height: 60px;
+    margin: 0 auto;
+    float: left;
+    margin-left: -25px;
+}
+
+.other .poker__out div{
+    width: 40px;
+    height: 60px;
+    position: absolute;
+    transform-style: preserve-3d;
+    backface-visibility:hidden;
+    transition:all 2s;
+    background-size:cover;
+}
+
+.my .poker__out {
+    width: 60px;
+    height: 80px;
+    margin: 0 auto;
+    float: left;
+}
+
+.my .poker__out div {
+    width: 60px;
+    height: 80px;
+    position: absolute;
+    transform-style: preserve-3d;
+    backface-visibility:hidden;
+    transition:all 2s;
+    background-size:cover;
+}
+
+.poker__bg{
+    background: url("/poker/pokerBg.png");
+    transform:rotateY(0);
+}
+.poker__a{
+    background: url("/poker/1_0.png") no-repeat;
+    transform:rotateY(-180deg);
+}
+.poker__out.active .poker__bg{
+    transform:rotateY(-180deg);
+}
+.poker__out.active .poker__a{
+    transform:rotateY(0deg);
 }

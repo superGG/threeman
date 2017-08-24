@@ -7,6 +7,9 @@
     4: "four",
     5: "five"
   };
+
+  var chip = 0;
+
   var socket = io.connect(socketUrl);
   var roomId = window.location.href.split("?")[1].split("=")[1];
   var userId = localStorage.getItem('userId');
@@ -28,29 +31,37 @@
     })
   };
 
+  /**
+   * 渲染用户扑克信息
+   * @param poker
+   * @returns {string}
+   */
+  var renderPoker = function(poker) {
+
+    if(!poker) {
+      return '';
+    }
+
+    var pokerStr = '';
+    poker.forEach(function(item, index) {
+
+      var pokerSrc = item.number + "_" + (item.color -  1) + ".png";
+      pokerStr = pokerStr + '<div class="poker__out"><div class="poker__bg"></div>' +
+        '<div class="poker__a" style="background-image:url(/poker/' + pokerSrc +');"></div></div>';
+    });
+
+    setTimeout(function() {
+      $(".poker__out").addClass('active');
+    }, 3000);
+
+    return pokerStr;
+  };
 
   /**
    * 渲染用户信息
    * @param userList
    */
   var renderUserInfo = function(userList) {
-
-    /**
-     * <div class="player one">
-     <div class="userInfo">
-     <div class="avatar">
-     <img src="/user/2.png" alt="">
-     </div>
-     <span class="nick">放水淀粉</span>
-     <span class="count">积分: 1000$</span>
-     </div>
-     <div class="pokerBg">
-     <img src="/poker/pokerBg.png" alt="">
-     <img src="/poker/pokerBg.png" alt="">
-     <img src="/poker/pokerBg.png" alt="">
-     </div>
-     </div>
-     */
 
     renderMyinfo(userList[userId]);
     delete userList[userId];
@@ -61,15 +72,15 @@
 
       var readyStr = userList[p].ready  ? '准备中' : '未准备';
 
-      userStr = userStr + '<div class="player '+ siteNote[i]+ ' ' + i +'"><div class="userInfo">'
+      userStr = userStr + '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
         + '<div class="avatar"><img src="'+ baseUrl + userList[p].avatar +'" alt=""></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
-        + '<div class="pokerBg"><img src="/poker/pokerBg.png" alt=""><img src="/poker/pokerBg.png" alt=""><img src="/poker/pokerBg.png" alt=""> </div>' +
-        '<span class="ready">' + readyStr +'</span> </div>'
+        + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
+        '<span class="ready">' + readyStr +'</span> <span class="money">下注：50积分</span></div>'
     }
 
     i = 0;
-    $(".other").html(userStr);
+    $(".other").html($(".other").html() + userStr);
   };
 
   /**
@@ -81,11 +92,28 @@
     $(".my .userInfo .avatar img").attr("src", baseUrl + myInfo.avatar);
     $(".my .userInfo .nick").html(myInfo.name);
     $(".my .userInfo .count").html(myInfo.interal);
+    $(".my .poker").html(renderPoker(myInfo.poker));
   };
 
    $('.option').on("click", "li", function(e) {
 
      var id = e.target.id;
+     var type = e.target.type;
+
+     console.log(type);
+
+     if(type === 'chip') {
+
+       var val = e.target.innerHTML;
+       console.log(val);
+       socket.emit('bet', {
+         roomId: roomId,
+         user: user,
+         money: val
+       });
+
+       return;
+     }
 
      if(id === 'ready') {
        socket.emit("readyGame", {
@@ -95,7 +123,28 @@
      }
    });
 
+  /**
+   * 渲染投注选项
+   * @returns {string}
+   */
+  var renderChipOption = function() {
 
+     var multiple = [1, 2, 4, 6, 8, 10];
+
+     var optionStr = "<h3>请选择你要投放的注数</h3>";
+     multiple.forEach(function(item, index) {
+
+       optionStr = optionStr + "<li val="+ chip * item+" type='chip'>" + chip * item +"</li>";
+     });
+
+     return optionStr;
+   };
+
+
+  /**
+   * 渲染操作区
+   * @param optionFlag
+   */
   var renderOption = function(optionFlag) {
 
     $('.result_alert').css("display", "none");
@@ -110,6 +159,12 @@
       case 2:
         $('.option').css('display', 'block');
         $('.option ul').html('<h3>请等待其他玩家准备</h3>');
+        return;
+      case 3:
+        $('.option').css('display', 'block');
+        $('.option ul').html(renderChipOption());
+        $('.ready').css("display", "none");
+        return;
       default:
         return;
     }
@@ -125,19 +180,29 @@
     // $(this).attr("src", "/poker/" + myPokerPng[i])
   });
 
+
+
   socket.emit("roomInfo", {
-    roomId: roomId
+    roomId: roomId,
+    user: user
   });
 
   socket.on("roomInfo", function(data) {
 
     console.log(data);
 
+    chip = data.room.minChip;
     renderUserInfo(data.room.userList);
     renderOption(1);
   });
 
   socket.on("readyGame", function(data) {
+
+    if(data.allReady) {
+
+      renderOption(3);
+      return
+    }
 
     var readyUserId = data.readyUser.userId;
 
@@ -146,10 +211,31 @@
       renderOption(2)
     }else {
 
-      $('.'+readyUserId+'.ready').html("准备中")
+      $('.user'+readyUserId+' .ready').html("准备中").css('color','#ffb422')
     }
 
   });
+
+  socket.on('bet', function(data) {
+    var betUser = data.betUser;
+    var chip = data.money;
+
+    if(user.userId === betUser.userId) {
+      $(".chip .money").html(chip + '积分')
+      $(".chip").css("display", "block");
+      renderOption();
+    }else {
+
+      $('.user' + betUser.userId + ' .money').html('下注：'+ chip +'积分').css("display", "block")
+    }
+
+  });
+
+  socket.on('deal', function(data) {
+
+    renderUserInfo(data.room.userList)
+  });
+
 
   var width = document.documentElement.clientWidth;
   var height =  document.documentElement.clientHeight;
