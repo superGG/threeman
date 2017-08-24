@@ -47,7 +47,6 @@ exports.start = async function (sockets, yuanData) {
                 roomList[room.roomId] = room;
                 var result = {result: true, room}
                 console.log(user.name + "用户创建" + room.roomId + "房间")
-                // sockets.to(room.roomId).emit('test', result);
                 sockets.to(room.roomId).emit('createRoom', result);
             } catch (e) {
                 console.log(e)
@@ -71,6 +70,7 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId] = user;
                     roomList[roomId].userList[user.userId].ready = false;
+                    room.userList[user.userId].bet = 0;
                     socket.join(roomId)
                     console.log(user.name + "加入" + roomId + "房间")
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
@@ -164,9 +164,9 @@ exports.start = async function (sockets, yuanData) {
                         return;
                     }
                     roomList[roomId].userList[user.userId].ready = true;
-
                     console.log(roomId + "房间的" + user.name + "准备游戏")
-                    if (isAllReady(roomList[roomId])) {  //判断是否可以发牌
+
+                    if (isAllReady(roomList[roomId])) {  //判断是否可以下注
                         console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId]});
                         return;
@@ -190,7 +190,7 @@ exports.start = async function (sockets, yuanData) {
                 }
                 roomList[roomId].userList[user.userId].ready = false
                 console.log(roomId+"房间的"+user.name + "取消准备")
-                sockets.to(roomId).emit('cancleReady', {result:true,cancleReadyUser:user,room:roomList[roomId]});
+                sockets.to(roomId).emit('cancleReady', {result:true,cancleReadyUser:user});
             }
         })
 
@@ -233,8 +233,12 @@ exports.start = async function (sockets, yuanData) {
 
                 //更新用户数据
                 await Promise.all(userArray.map(user =>
-                    session.update(`update {user}`,{userId:user.userId, interal:(user.interal+user.reault.count)})))
-
+                    session.update(`update {user}`,{userId:user.userId, interal:(user.interal+user.reault.count)})
+                ));
+                //积分记录
+                // await Promise.all(userArray.map(user =>
+                //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
+                // ));
                 sockets.to(roomId).emit('compare', {userArray});
             } catch (e) {
                 console.log(e)

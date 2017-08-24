@@ -126,6 +126,10 @@
       "values" : ["充值", "打牌"],
       "default" : "打牌"
     },
+    "user" : {
+      "type" : "object",
+      "belongsTo" :"user"
+    },
     "createTime" : {
       "type" :"date",
       "default" :"now"
