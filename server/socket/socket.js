@@ -241,6 +241,7 @@ exports.start = async function (sockets, yuanData) {
                 // ));
                 sockets.to(roomId).emit('compare', {userArray});
             } catch (e) {
+                console.log("")
                 console.log(e)
             }
         });
@@ -373,9 +374,5 @@ function count(userList) {
         }
     })
     return userArray;
-}
-
-updateData = async(userArray, session) => {
-
 }
 
