@@ -254,36 +254,6 @@ exports.start = async function (sockets, yuanData) {
         })
 
         /**
-         * 计算结果
-         */
-        socket.on('compare', async(data, yuanData) => {
-            try {
-                if (!roomList[roomId].count) { //该轮游戏没有计算结果
-                    var {roomId, userList} = data;
-                    let session = await yuanData.createSession();
-                    var userArray = count(userList);
-
-                    //更新用户数据
-                    await Promise.all(userArray.map(user =>
-                        session.update(`update {user}`, {
-                            userId: user.userId,
-                            interal: (user.interal + user.reault.count)
-                        })
-                    ));
-                    //积分记录
-                    // await Promise.all(userArray.map(user =>
-                    //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
-                    // ));
-                    roomList[roomId].count = true;
-                    sockets.to(roomId).emit('compare', {userArray});
-                }
-            } catch (e) {
-                console.log("The calculation results err")
-                console.log(e)
-            }
-        });
-
-        /**
          * 结束本轮游戏，准备下一轮
          */
         socket.on('endGame', function (data) {
@@ -375,20 +345,6 @@ function objectToArray(userList) {
         userArray.push(userList[i])
     }
     return userArray;
-}
-
-
-compare = async(roomId, userList) => {
-    let session = await yuanData.createSession();
-    var userArray = await count(userList);
-
-    //更新用户数据
-    await Promise.all(userArray.map(user => session.update(`update {user}`, {userId: user.userId, interal: (user.interal + user.reault.count)})));
-        //积分记录
-        // await Promise.all(userArray.map(user =>
-        //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
-        // ));
-    sockets.to(roomId).emit('compare', {userArray});
 }
 
 /**
