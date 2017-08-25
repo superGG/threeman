@@ -1,5 +1,10 @@
 $(function() {
 
+  var avatar = localStorage.getItem('avatar');
+  if(avatar) {
+    location.href = '/userInfo'
+  }
+
   var checkAvatar = function(val) {
 
     if(!val) {

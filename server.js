@@ -181,6 +181,11 @@ app.get("/socket", (req, res) => {
   res.sendFile(path.join(__dirname, "socketTest.html"))
 });
 
+app.get("/admin", (req, res) => {
+
+  res.sendFile(path.join(__dirname, "admin", "index.html"))
+});
+
 app.listen(port, (error) => {
   if (error) {
     console.error(error);

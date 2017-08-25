@@ -321,6 +321,12 @@
 
   socket.on("roomInfo", function(data) {
 
+    console.log("roomInfo")
+
+    if(errorServer(data)) {
+      return false
+    }
+
     console.log(data);
 
     chip = data.room.minChip;
@@ -328,6 +334,11 @@
   });
 
   socket.on("readyGame", function(data) {
+
+    console.log("readyGame")
+    if(errorServer(data)) {
+      return false
+    }
 
     if(data.allReady) {
 
@@ -348,6 +359,7 @@
   });
 
   socket.on('bet', function(data) {
+    console.log("bet")
 
     if(errorServer(data)) {
       return;
@@ -369,6 +381,11 @@
 
   socket.on('deal', function(data) {
 
+    console.log("deal")
+    if(errorServer(data)) {
+      return false
+    }
+
     var loading = weui.loading("发牌中，请稍等...");
     renderUserInfo(data.room)
 
@@ -383,8 +400,10 @@
   });
 
   socket.on('compare', function(data) {
-
-    console.log(data);
+    console.log('compare')
+    if(errorServer(data)) {
+      return false
+    }
 
     var userArray = data.userArray;
 
@@ -393,12 +412,18 @@
 
   socket.on('endGame', function(data) {
 
+    console.log('endGame')
+    if(errorServer(data)) {
+      return false
+    }
+
     renderUserInfo(data.room);
   });
 
 
   socket.on("leaveRoom", function(data) {
 
+    console.log('leaveRoom')
     if(errorServer(data)) {
       return false
     }
@@ -416,11 +441,15 @@
 
   socket.on("closeRoom", function(data) {
 
+    console.log('closeRoom')
     if(errorServer(data)) {
       return false
     }
 
-    Msgloading.hide();
+    if(role == 1) {
+      Msgloading.hide();
+    }
+
     weui.topTips(data.message, {
       duration: 3000,
       callback: function(){ location.href = '/userInfo' }

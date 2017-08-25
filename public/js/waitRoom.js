@@ -164,6 +164,14 @@ $(function() {
     })
   })
 
+  $(".copy").click(function() {
+
+    var urlInput = $('#room_code').get(0);
+    urlInput.select(); // 选择对象
+    document.execCommand("Copy");
+    console.log('copy');
+  });
+
   $(".weui-select").change(function(e) {
     var value = e.target.value;
     socket.emit("setMinChip", {
