@@ -80,6 +80,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
                 }
             } catch (e) {
+                console.log("Join room has error")
                 console.log(e)
             }
         })
@@ -91,7 +92,7 @@ exports.start = async function (sockets, yuanData) {
             try {
                 var {roomId, user} = data
                 if (roomList[roomId] != null) {
-                    if (!checkUser(user)) {
+                    if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
                         socket.emit('leaveRoom', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
@@ -101,6 +102,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
                 }
             } catch (e) {
+                console.log("Leave room has error")
                 console.log(e)
             }
         })
@@ -112,10 +114,11 @@ exports.start = async function (sockets, yuanData) {
             try {
                 var roomId = data.roomId;
                 delete roomList[roomId];
-                socket.leave(roomId)
                 console.log(roomId + "房间关闭")
                 sockets.to(roomId).emit('closeRoom', {result: true, message: "房主关闭房间"})
+                socket.leave(roomId)
             } catch (e) {
+                console.log("Close room has error")
                 console.log(e)
             }
         })
@@ -138,8 +141,7 @@ exports.start = async function (sockets, yuanData) {
          * 获取房间信息
          */
         socket.on('roomInfo', function (data) {
-            var roomId = data.roomId;
-            var user = data.user;
+            var {roomId,user} = data;
             if (roomList[roomId].userList.hasOwnProperty(user.userId)) {
                 socket.join(roomId);
             }
@@ -153,10 +155,11 @@ exports.start = async function (sockets, yuanData) {
             try {
                 var {roomId, minChip} = data;
                 if (roomList[roomId] == null) socket.emit('setMinChip', {result: false, message: '没有该房间'})
-                roomList[roomId].minChip = minChip;
+                roomList[roomId].minChip = Number(minChip);
                 console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
                 socket.emit('setMinChip', {result: true, message: '设置成功'})
             } catch (e) {
+                console.log("-----------Set Min Chip has error")
                 console.log(e)
             }
         })
@@ -183,6 +186,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
                 }
             } catch (e) {
+                console.log("-----------Ready game has error")
                 console.log(e)
             }
         })
@@ -208,14 +212,21 @@ exports.start = async function (sockets, yuanData) {
          */
         socket.on('bet', async(data) => {
             try {
-                var {roomId, user, money} = data;
+                var {roomId, user} = data;
+                var money = Number(data.money)
                 if (roomList[roomId] != null) {
                     if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
                         socket.emit('bet', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
-                    if (money < roomList[roomId].minChip) socket.emit('bet', {result: false, message: "不能低于最低下注筹码"})
-                    if (money > user.interal) socket.emit('bet', {result: false, message: "不能高于自身积分"})
+                    if (money < roomList[roomId].minChip) {
+                        socket.emit('bet', {result: false, message: "下注不能低于最低下注筹码"})
+                        return;
+                    }
+                    if (money > user.interal) {
+                        socket.emit('bet', {result: false, message: "下注不能高于自身积分"})
+                        return;
+                    }
                     roomList[roomId].userList[user.userId].bet = money;
 
                     console.log(`${roomId}房间的${user.name}下注${money}元`)
@@ -242,7 +253,7 @@ exports.start = async function (sockets, yuanData) {
                                 console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
                             }, 15000);
                         } catch (err) {
-                            console.log("The calculation results err")
+                            console.log("The calculation results error")
                             console.log(err)
                         }
                         return;
@@ -254,43 +265,13 @@ exports.start = async function (sockets, yuanData) {
         })
 
         /**
-         * 计算结果
-         */
-        socket.on('compare', async(data, yuanData) => {
-            try {
-                if (!roomList[roomId].count) { //该轮游戏没有计算结果
-                    var {roomId, userList} = data;
-                    let session = await yuanData.createSession();
-                    var userArray = count(userList);
-
-                    //更新用户数据
-                    await Promise.all(userArray.map(user =>
-                        session.update(`update {user}`, {
-                            userId: user.userId,
-                            interal: (user.interal + user.reault.count)
-                        })
-                    ));
-                    //积分记录
-                    // await Promise.all(userArray.map(user =>
-                    //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
-                    // ));
-                    roomList[roomId].count = true;
-                    sockets.to(roomId).emit('compare', {userArray});
-                }
-            } catch (e) {
-                console.log("The calculation results err")
-                console.log(e)
-            }
-        });
-
-        /**
          * 结束本轮游戏，准备下一轮
          */
         socket.on('endGame', function (data) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             initGame(data.roomId);
-            sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏"})
+            sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room:roomList[data.roomId]})
         })
 
         /**
@@ -301,11 +282,10 @@ exports.start = async function (sockets, yuanData) {
             //初始化改房间所有人的信息
             initGame(data.roomId);
             roomList[data.roomId].start = false;
-            socket.to(data.roomId).emit('closeGame', {result: true, message: "房主关闭游戏"})
+            socket.to(data.roomId).emit('closeGame', {result: true, message: "房主关闭游戏", room:roomList[data.roomId]})
         })
 
     });
-
 }
 
 /**
@@ -313,12 +293,11 @@ exports.start = async function (sockets, yuanData) {
  * @param roomId
  */
 function initGame(roomId) {
-    var userList = roomList[roomId].userList
-    for (var userId in userList) {
-        delete userList[userId].result;
-        delete userList[userId].poker;
-        userList[userId].ready = false;
-        userList[userId].bet = 0;
+    for (var userId in roomList[roomId].userList) {
+        delete roomList[roomId].userList[userId].result;
+        delete roomList[roomId].userList[userId].poker;
+        roomList[roomId].userList[userId].ready = false;
+        roomList[roomId].userList[userId].bet = 0;
     }
 }
 
@@ -360,7 +339,7 @@ function isAllBet(room) {
     var userList = room.userList;
     for (var userId in userList) {
         var user = userList[userId];
-        if (user.bet <= 0) return false; //只要有一个没有下注，都不能开始
+        if (!(user.bet > 0)) return false; //只要有一个没有下注，都不能开始
     }
     return true;
 }
@@ -375,20 +354,6 @@ function objectToArray(userList) {
         userArray.push(userList[i])
     }
     return userArray;
-}
-
-
-compare = async(roomId, userList) => {
-    let session = await yuanData.createSession();
-    var userArray = await count(userList);
-
-    //更新用户数据
-    await Promise.all(userArray.map(user => session.update(`update {user}`, {userId: user.userId, interal: (user.interal + user.reault.count)})));
-        //积分记录
-        // await Promise.all(userArray.map(user =>
-        //     session.excute(`add {record}`,{interal:user.result.count,user:{userId:user.userId}})
-        // ));
-    sockets.to(roomId).emit('compare', {userArray});
 }
 
 /**
@@ -410,20 +375,20 @@ function count(userList) {
     //计算玩家从下注池中获得的金额
     userArray.forEach(user => {
         if (sum_money > 0) {
-            if ((sum_money - user.bet) > 0) {
-                if ((sum_money - 2 * user.bet) > 0) { //玩家可以获得下注池中 自己本金的2倍
-                    user.result.count = user.bet;
-                    sum_money = sum_money - 2 * user.bet;
+            if ((sum_money - Number(user.bet)) > 0) {
+                if ((sum_money - 2 * Number(user.bet)) > 0) { //玩家可以获得下注池中 自己本金的2倍
+                    user.result.count = Number(user.bet);
+                    sum_money = sum_money - 2 * Number(user.bet);
                 } else {  //下注池的最后一部分，除了玩家本金还有余
-                    user.result.count = sum_money - user.bet; //正数
+                    user.result.count = sum_money - Number(user.bet); //正数
                     sum_money = 0;
                 }
             } else {  // 下注池的最后一部分，不够玩家本金
-                user.result.count = sum_money - user.bet; //负数
+                user.result.count = sum_money - Number(user.bet); //负数
                 sum_money = 0;
             }
         } else { //下注池已经没金额
-            user.result.count = -user.bet;
+            user.result.count = -Number(user.bet);
         }
     })
     return userArray;
