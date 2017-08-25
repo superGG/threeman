@@ -4,7 +4,7 @@
     "reql" : "query [role : {*}]"
   },{
     "url" : "/admin/user/list",
-    "reql" : "query [user($dynamic page $page, $pageSize order registerTime desc) : {userId, name, phone,lastLoginTime,registerTime}]",
+    "reql" : "query [user($dynamic page $page, $pageSize order registerTime desc) : {userId, name, phone,image,interal,lastLoginTime,registerTime}]",
     "param" : {
       "dynamic" :{
         "default" : "userId>0"
@@ -55,5 +55,21 @@
   },{
     "url" : "/admin/question/update",
     "reql" : "update {question}"
+  },{
+    "url":"/admin/user/recharge",
+    "method" :"user.rechargeInteral",
+    "comment" : "充值积分"
+  },{
+    "url" : "/admin/record/list",
+    "reql" : "query [record($dynamic page $page, $pageSize order createTime desc):{interal,user($userDynamic):{userId,name,phone,image},way,createTime}]",
+    "param" :{
+      "userDynamic" :{
+        "default" : "userId>0"
+      },
+      "dynamic" : {
+        "default" : "recordId>0"
+      }
+    },
+    "comment" :"所有充值记录"
   }]
 }
