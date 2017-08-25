@@ -240,7 +240,7 @@ exports.start = async function (sockets, yuanData) {
                                 ));
                                 sockets.to(roomId).emit('compare', {userArray});
                                 console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
-                            }, 5000);
+                            }, 15000);
                         } catch (err) {
                             console.log("The calculation results err")
                             console.log(err)

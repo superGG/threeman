@@ -68,12 +68,14 @@
     for(var p in userList) {
 
       var readyStr = userList[p].ready  ? '准备中' : '未准备';
+      var betStr = userList[p].bet ? '<span class="money" style-"display:block;">下注：' + userList[p].bet +'积分</span>' :
+        '<span class="money">下注：积分</span>';
 
-      userStr = '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
+        userStr = '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
         + '<div class="avatar"><img src="'+ baseUrl + userList[p].avatar +'" alt=""></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
         + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
-        '<span class="ready">' + readyStr +'</span> <span class="money">下注：50积分</span></div>'
+        '<span class="ready">' + readyStr +'</span> ' + betStr +'</div>'
     }
 
     i = 0;
@@ -90,6 +92,11 @@
     $(".my .userInfo .nick").html(myInfo.name);
     $(".my .userInfo .count").html(myInfo.interal);
     $(".my .poker").html(renderPoker(myInfo.poker));
+
+    if(myInfo.bet) {
+      $('.chip').css('display', 'block');
+      $('.chip .money').html(myInfo.bet + '积分');
+    }
   };
 
    $('.option').on("click", "li", function(e) {
@@ -111,6 +118,10 @@
 
        return;
      }
+
+     $('#close-result').click(function() {
+        $(".result_alert").css('display', "none")
+     });
 
      if(id === 'ready') {
        socket.emit("readyGame", {
@@ -246,6 +257,38 @@
   socket.on('compare', function(data) {
 
     console.log(data);
+
+    var userArray = data.userArray;
+    var str = '';
+
+    userArray.forEach(function(item, index) {
+
+      var pokerHtml = '';
+      item.poker.forEach(function(item, index) {
+        pokerHtml = pokerHtml + '<img src="/poker/'+ item.number + '_' + Math.abs(item.color - 1)+'.png" alt="">';
+      });
+
+      var val = item.result.rank === 5 ? "三公" : item.result.number;
+
+
+      str = str + '<div class="item"> ' +
+        '<span class="ranking">'+ (index + 1) +'</span>' +
+        ' <div class="poker"> ' + pokerHtml +
+        '</div> <span class="type">' + val +'</span> ' +
+        '<span class="name">' + item.name+'</span> ' +
+        '<div class="chip"> <div class="deal">' + item.bet+' </div>' +
+        ' <div class="add">' + item.result.count +' </div> </div> </div>'
+    });
+
+    $(".result_alert").css("display", "block").find('.content').html(str)
+
+    takeTime(20, function(i) {
+
+      $('.result_alert .subtitle .count').html(20 - i)
+    }, function() {
+
+      $('.result_alert').css('display', "none");
+    })
   });
 
 
