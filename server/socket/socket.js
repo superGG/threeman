@@ -96,10 +96,10 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('leaveRoom', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
-                  sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
-                  delete roomList[roomId].userList[user.userId]
-                  socket.leave(roomId)
-                  console.log(user.name + "离开了房间")
+                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
+                    delete roomList[roomId].userList[user.userId]
+                    socket.leave(roomId)
+                    console.log(user.name + "离开了房间")
                 }
             } catch (e) {
                 console.log("Leave room has error")
@@ -141,11 +141,17 @@ exports.start = async function (sockets, yuanData) {
          * 获取房间信息
          */
         socket.on('roomInfo', function (data) {
-            var {roomId,user} = data;
-            if (roomList[roomId].userList.hasOwnProperty(user.userId)) {
-                socket.join(roomId);
+            try {
+                var {roomId, user} = data;
+                if (roomList[roomId] != null) {
+                    if (roomList[roomId].userList.hasOwnProperty(user.userId)) {
+                        socket.join(roomId);
+                    }
+                    socket.emit('roomInfo', {result: true, room: roomList[roomId]});
+                }
+            } catch (e) {
+                console.log(e)
             }
-            socket.emit('roomInfo', {result: true, room: roomList[roomId]});
         })
 
         /**
@@ -252,7 +258,10 @@ exports.start = async function (sockets, yuanData) {
                                 ));
                                 //添加积分记录
                                 await Promise.all(userArray.map(user =>
-                                    session.execute(`add {record}`, {interal:user.result.count,user:{userId:user.userId}})
+                                    session.execute(`add {record}`, {
+                                        interal: user.result.count,
+                                        user: {userId: user.userId}
+                                    })
                                 ));
                                 sockets.to(roomId).emit('compare', {userArray});
                                 console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
@@ -276,7 +285,7 @@ exports.start = async function (sockets, yuanData) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             initGame(data.roomId);
-            sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room:roomList[data.roomId]})
+            sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
         })
 
         // /**
@@ -383,13 +392,13 @@ function objectToArray(userList) {
 function count(userList) {
     //计算每个玩家的牌型大小
     var userArray = objectToArray(userList).map(user => {
-      user.result = threeman.count(user.poker)
-      return user;
+        user.result = threeman.count(user.poker)
+        return user;
     })
 
     //给玩家的牌排序
     userArray.sort(threeman.compare);
-    userArray.forEach( (user, index )=>{
+    userArray.forEach((user, index) => {
         user.result.sort = index;
     })
     //计算玩家下注总金额
