@@ -110,4 +110,6 @@ var takeTime = function(count, ex, cb) {
       cb();
     }
   }, 1000)
+
+  return timer;
 };

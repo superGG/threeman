@@ -15,6 +15,7 @@
   var roomId = paramsArr[0].split("=")[1];
   var role = paramsArr[1].split('=')[1];
   var userId = localStorage.getItem('userId');
+  var Msgloading = '', timer = '';
   var user = {
     name: localStorage.getItem("name"),
     interal: localStorage.getItem("interal"),
@@ -97,7 +98,7 @@
     }
 
     i = 0;
-    $(".other").html($(".other").html() + userStr);
+    $(".other").html(userStr);
   };
 
   /**
@@ -111,6 +112,7 @@
     $(".my .userInfo .count").html(myInfo.interal);
     $(".my .poker").html(renderPoker(myInfo.poker));
 
+    $('.chip').css('display', 'none');
     if(myInfo.bet) {
       $('.chip').css('display', 'block');
       $('.chip .money').html(myInfo.bet + '积分');
@@ -137,9 +139,6 @@
        return;
      }
 
-     $('#close-result').click(function() {
-        $(".result_alert").css('display', "none")
-     });
 
      if(id === 'ready') {
        socket.emit("readyGame", {
@@ -147,7 +146,47 @@
          user: user
        })
      }
+
+     if(id === 'nextRound') {
+
+       socket.emit('endGame', {
+         roomId: roomId
+       });
+     }
+
+     if(id === 'waitRound') {
+
+       renderOption()
+     }
+
+     if(id === 'leaveGame') {
+
+       socket.emit('leaveRoom',  {
+         roomId: roomId,
+         user: user
+       })
+     }
+
+     if(id === 'closeGame') {
+
+       Msgloading = weui.loading("请求中...")
+       socket.emit("closeRoom", {
+         roomId: roomId
+       })
+     }
+
    });
+
+
+  $('#close-result').click(function() {
+    $(".result_alert").css('display', "none");
+    clearInterval(timer);
+    if(role == 1) {
+      renderOption(4)
+    }else {
+      renderOption(6)
+    }
+  });
 
   /**
    * 渲染投注选项
@@ -190,12 +229,18 @@
 
     $(".result_alert").css("display", "block").find('.content').html(str)
 
-    takeTime(20, function(i) {
+    timer = takeTime(20, function(i) {
 
       $('.result_alert .subtitle .count').html(20 - i)
     }, function() {
 
       $('.result_alert').css('display', "none");
+
+      if(role == 1) {
+        renderOption(4)
+      }else {
+        renderOption(6)
+      }
     })
 
     return str;
@@ -209,6 +254,7 @@
    * 3 deal
    * 4 nextRound
    * 5 result
+   * 6 waitNextRound
    * default none
    * @param optionFlag
    */
@@ -219,12 +265,12 @@
 
     var userArray = [];
 
-
+    var leaveOption = role == 1 ? "closeGame": "leaveGame";
 
     switch(optionFlag) {
       case 1:
         $('.option').css('display', 'block');
-        var optionStr = '<h3>准备好了，就可以开始游戏啦！</h3><li id="ready">准备</li><li id="leaveTag">离开房间</li>';
+        var optionStr = '<h3>准备好了，就可以开始游戏啦！</h3><li id="ready">准备</li><li id="' + leaveOption +'">离开</li>';
         $('.option ul').html(optionStr);
         return;
       case 2:
@@ -238,7 +284,7 @@
         return;
       case 4:
         $('.option').css('display', 'block');
-        $('.option ul').html('<h3>是否开始下一轮</h3><li id="#nextRound">开始</li><li>关闭游戏</li>');
+        $('.option ul').html('<h3>是否开始下一轮</h3><li id="nextRound">开始</li><li id="closeGame">关闭游戏</li>');
         return;
       case 5:
         $(".poker__out").addClass('active');
@@ -246,6 +292,10 @@
           userArray[userList[p].result.sort] = userList[p];
         }
         renderResult(userArray);
+        return;
+      case 6:
+        $('.option').css('display', 'block');
+        $('.option ul').html('<h3>是否开始下一轮</h3><li id="waitRound">等待下一轮</li><li id="leaveGame">离开</li>');
         return;
       default:
         return;
@@ -298,6 +348,11 @@
   });
 
   socket.on('bet', function(data) {
+
+    if(errorServer(data)) {
+      return;
+    }
+
     var betUser = data.betUser;
     var chip = data.money;
 
@@ -335,6 +390,43 @@
 
     renderResult(userArray)
   });
+
+  socket.on('endGame', function(data) {
+
+    renderUserInfo(data.room);
+  });
+
+
+  socket.on("leaveRoom", function(data) {
+
+    if(errorServer(data)) {
+      return false
+    }
+
+    if(data.leaveUser.userId == user.userId) {
+      weui.toast("操作成功", {
+        duration: 3000,
+        callback: function(){ location.href = '/userInfo' }
+      })
+    }
+
+    $('.user' + data.leaveUser.userId).remove()
+
+  });
+
+  socket.on("closeRoom", function(data) {
+
+    if(errorServer(data)) {
+      return false
+    }
+
+    Msgloading.hide();
+    weui.topTips(data.message, {
+      duration: 3000,
+      callback: function(){ location.href = '/userInfo' }
+    })
+  });
+
 
 
   var width = document.documentElement.clientWidth;
