@@ -153,6 +153,18 @@ exports.resetPassword = async function ({param, session, cache}) {
 	await user.save()
 }
 
+/**
+ * 充值积分
+ * @param data
+ */
+exports.rechargeInteral = async ({data,session}) => {
+	if (data.interal == 0) throw new Error('操作有误')
+	let user = await session.query(`query {user(userId=$userId):{userId,interal}}`,{userId:data.userId})
+    user.interal += Number(data.interal);
+	await user.save();
+	await session.execute(`add {record}`,{interal:data.interal,user:{userId:data.userId},way:"充值"})
+}
+
 exports.adminLogin = ({param}) => {
 	const admin = adminInfos.filter(admin => admin.phone == param.phone && md5(admin.password) == param.password)[0]
 	if (admin != null) {
