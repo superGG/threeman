@@ -20,7 +20,7 @@ $(function() {
     var i = 0;
     for(var p in userList) {
 
-      siteDom.eq(i).css("background-image", "url(adfadf" + baseUrl + userList[p].avatar + ")")
+      siteDom.eq(i).css("background-image", "url(" + baseUrl + userList[p].avatar + ")")
       i ++;
     }
 
@@ -187,4 +187,8 @@ $(function() {
     })
   })
 });
+
+window.onbeforeunload = function(){
+  return "必您确定要退出页面并关闭房间吗？";
+}
 

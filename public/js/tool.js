@@ -1,7 +1,7 @@
-var baseUrl = "http://localhost:8080";
+var baseUrl = "http://192.168.0.100:8080";
 var serverUrl = baseUrl + "/api/";
-var socketUrl = "http://localhost:8080";
-var testUrl = "http://localhost:3000";
+var socketUrl = "http://192.168.0.100:8080";
+var testUrl = "http://192.168.0.100:3000";
 
 var checkInputVal = function(vals) {
 
