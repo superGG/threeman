@@ -179,6 +179,7 @@ exports.start = async function (sockets, yuanData) {
                     console.log(roomId + "房间的" + user.name + "准备游戏")
 
                     if (isAllReady(roomList[roomId])) {  //判断是否可以下注
+                        roomList[roomId].allReady = true;
                         console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
@@ -293,6 +294,7 @@ exports.start = async function (sockets, yuanData) {
  * @param roomId
  */
 function initGame(roomId) {
+    delete roomList[roomId].allReady;
     for (var userId in roomList[roomId].userList) {
         delete roomList[roomId].userList[userId].result;
         delete roomList[roomId].userList[userId].poker;
@@ -369,6 +371,9 @@ function count(userList) {
 
     //给玩家的牌排序
     userArray.sort(threeman.compare);
+    userArray.forEach( (user, index )=>{
+        user.result.sort = index;
+    })
     //计算玩家下注总金额
     var sum_money = userArray.reduce((all, current) => all + Number(current.bet), 0);
 

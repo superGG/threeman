@@ -112,10 +112,12 @@ $(function() {
       return false
     }
 
+    var role = option === "create" ? 1 : 2;
+
     weui.alert("游戏将在10s后开始，请设置手机为横屏模式。");
 
     setTimeout(function() {
-      window.location.href = '/main?roomId=' + roomId
+      window.location.href = '/main?roomId=' + roomId + "&role=" + role;
     }, 3000)
   });
 
