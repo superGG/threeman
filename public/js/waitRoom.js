@@ -2,6 +2,7 @@ $(function() {
   var paramArr = location.href.split("?")[1].split("&");
   var socket = io.connect(socketUrl);
   var userList = {}, roomId = '', option = "";
+  var userId = localStorage.getItem('userId');
 
   for(var i = 0, len = paramArr.length; i < len; i++) {
 
@@ -58,7 +59,7 @@ $(function() {
     console.log('leave');
     console.log(data);
 
-    if(data.message) {
+    if(data.leaveUser.userId == userId) {
       weui.toast("操作成功", {
         duration: 3000,
         callback: function(){ location.href = '/userInfo' }
@@ -162,6 +163,14 @@ $(function() {
       roomId: roomId
     })
   })
+
+  $(".copy").click(function() {
+
+    var urlInput = $('#room_code').get(0);
+    urlInput.select(); // 选择对象
+    document.execCommand("Copy");
+    console.log('copy');
+  });
 
   $(".weui-select").change(function(e) {
     var value = e.target.value;

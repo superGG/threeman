@@ -96,10 +96,10 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('leaveRoom', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
-                    delete roomList[roomId].userList[user.userId]
-                    socket.leave(roomId)
-                    console.log(user.name + "离开了房间")
-                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
+                  sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
+                  delete roomList[roomId].userList[user.userId]
+                  socket.leave(roomId)
+                  console.log(user.name + "离开了房间")
                 }
             } catch (e) {
                 console.log("Leave room has error")
