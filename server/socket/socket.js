@@ -279,6 +279,20 @@ exports.start = async function (sockets, yuanData) {
         })
 
         /**
+         * 玩家退出桌面
+         */
+        socket.on('leaveGame', function (data) {
+            var {roomId,user} = data;
+            if(roomList[roomId].userList[userId].ready) {
+                socket.to(data.roomId).emit('leaveGame', {result: false, message: "游戏进行中,不能退出"});
+                return;
+            }
+            delete roomList[roomId].userList[user.userId]; //删除房间用户信息
+            console.log(`${data.roomId}房间的${user.name}退出桌面`)
+            sockets.to(data.roomId).emit('leaveGame', {result: true, leaveUser: user})
+        })
+
+        /**
          * 房主关闭游戏
          */
         socket.on('closeGame', function (data) {
@@ -286,7 +300,7 @@ exports.start = async function (sockets, yuanData) {
             //初始化改房间所有人的信息
             initGame(data.roomId);
             roomList[data.roomId].start = false;
-            socket.to(data.roomId).emit('closeGame', {result: true, message: "房主关闭游戏", room:roomList[data.roomId]})
+            sockets.to(data.roomId).emit('closeGame', {result: true, message: "房主关闭游戏", room:roomList[data.roomId]})
         })
 
     });
