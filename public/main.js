@@ -11,7 +11,9 @@
   var chip = 0;
 
   var socket = io.connect(socketUrl);
-  var roomId = window.location.href.split("?")[1].split("=")[1];
+  var paramsArr = window.location.href.split("?")[1].split('&');
+  var roomId = paramsArr[0].split("=")[1];
+  var role = paramsArr[1].split('=')[1];
   var userId = localStorage.getItem('userId');
   var user = {
     name: localStorage.getItem("name"),
@@ -58,8 +60,24 @@
    * 渲染用户信息
    * @param userList
    */
-  var renderUserInfo = function(userList) {
+  var renderUserInfo = function(room) {
 
+    var userList = room.userList;
+
+    if(userList[userId].result) {
+      renderOption(5, userList)
+    }else if(room.allReady) {
+
+      if(userList[userId].bet) {
+        renderOption()
+      }else {
+        renderOption(3)
+      }
+    }else if(userList[userId].ready) {
+      renderOption(2)
+    }else {
+      renderOption(1)
+    }
     renderMyinfo(userList[userId]);
     delete userList[userId];
 
@@ -68,12 +86,14 @@
     for(var p in userList) {
 
       var readyStr = userList[p].ready  ? '准备中' : '未准备';
+      var betStr = userList[p].bet ? '<span class="money" style="display:block;">下注：' + userList[p].bet +'积分</span>' :
+        '<span class="money">下注：积分</span>';
 
-      userStr = '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
+        userStr = '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
         + '<div class="avatar"><img src="'+ baseUrl + userList[p].avatar +'" alt=""></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
         + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
-        '<span class="ready">' + readyStr +'</span> <span class="money">下注：50积分</span></div>'
+        '<span class="ready">' + readyStr +'</span> ' + betStr +'</div>'
     }
 
     i = 0;
@@ -90,6 +110,11 @@
     $(".my .userInfo .nick").html(myInfo.name);
     $(".my .userInfo .count").html(myInfo.interal);
     $(".my .poker").html(renderPoker(myInfo.poker));
+
+    if(myInfo.bet) {
+      $('.chip').css('display', 'block');
+      $('.chip .money').html(myInfo.bet + '积分');
+    }
   };
 
    $('.option').on("click", "li", function(e) {
@@ -111,6 +136,10 @@
 
        return;
      }
+
+     $('#close-result').click(function() {
+        $(".result_alert").css('display', "none")
+     });
 
      if(id === 'ready') {
        socket.emit("readyGame", {
@@ -137,15 +166,60 @@
      return optionStr;
    };
 
+  var renderResult = function(userArray) {
+
+    var str = '';
+    userArray.forEach(function(item, index) {
+
+      var pokerHtml = '';
+      item.poker.forEach(function(item, index) {
+        pokerHtml = pokerHtml + '<img src="/poker/'+ item.number + '_' + Math.abs(item.color - 1)+'.png" alt="">';
+      });
+
+      var val = item.result.rank === 5 ? "三公" : item.result.number;
+
+
+      str = str + '<div class="item"> ' +
+        '<span class="ranking">'+ (index + 1) +'</span>' +
+        ' <div class="poker"> ' + pokerHtml +
+        '</div> <span class="type">' + val +'</span> ' +
+        '<span class="name">' + item.name+'</span> ' +
+        '<div class="chip"> <div class="deal">' + item.bet+' </div>' +
+        ' <div class="add">' + item.result.count +' </div> </div> </div>'
+    });
+
+    $(".result_alert").css("display", "block").find('.content').html(str)
+
+    takeTime(20, function(i) {
+
+      $('.result_alert .subtitle .count').html(20 - i)
+    }, function() {
+
+      $('.result_alert').css('display', "none");
+    })
+
+    return str;
+  };
+
 
   /**
    * 渲染操作区
+   * 1 ready
+   * 2 wait order ready
+   * 3 deal
+   * 4 nextRound
+   * 5 result
+   * default none
    * @param optionFlag
    */
-  var renderOption = function(optionFlag) {
+  var renderOption = function(optionFlag, userList) {
 
     $('.result_alert').css("display", "none");
     $('.option').css("display", "none");
+
+    var userArray = [];
+
+
 
     switch(optionFlag) {
       case 1:
@@ -161,6 +235,17 @@
         $('.option').css('display', 'block');
         $('.option ul').html(renderChipOption());
         $('.ready').css("display", "none");
+        return;
+      case 4:
+        $('.option').css('display', 'block');
+        $('.option ul').html('<h3>是否开始下一轮</h3><li id="#nextRound">开始</li><li>关闭游戏</li>');
+        return;
+      case 5:
+        $(".poker__out").addClass('active');
+        for(var p in userList) {
+          userArray[userList[p].result.sort] = userList[p];
+        }
+        renderResult(userArray);
         return;
       default:
         return;
@@ -189,8 +274,7 @@
     console.log(data);
 
     chip = data.room.minChip;
-    renderUserInfo(data.room.userList);
-    renderOption(1);
+    renderUserInfo(data.room);
   });
 
   socket.on("readyGame", function(data) {
@@ -231,7 +315,7 @@
   socket.on('deal', function(data) {
 
     var loading = weui.loading("发牌中，请稍等...");
-    renderUserInfo(data.room.userList)
+    renderUserInfo(data.room)
 
     setTimeout(function() {
 
@@ -246,6 +330,10 @@
   socket.on('compare', function(data) {
 
     console.log(data);
+
+    var userArray = data.userArray;
+
+    renderResult(userArray)
   });
 
 

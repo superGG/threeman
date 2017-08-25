@@ -97,3 +97,17 @@ var merge = function() {
 
 
 };
+
+var takeTime = function(count, ex, cb) {
+
+  var i = 0;
+
+  var timer = setInterval(function() {
+    ex(i);
+    if(++i > count) {
+
+      clearInterval(timer);
+      cb();
+    }
+  }, 1000)
+};
