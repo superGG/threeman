@@ -249,6 +249,10 @@ exports.start = async function (sockets, yuanData) {
                                         interal: (Number(user.interal) + user.result.count)
                                     })
                                 ));
+                                //添加积分记录
+                                await Promise.all(userArray.map(user =>
+                                    session.execute(`add {record}`, {interal:user.result.count,user:{userId:user.userId}})
+                                ));
                                 sockets.to(roomId).emit('compare', {userArray});
                                 console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
                             }, 5000);
