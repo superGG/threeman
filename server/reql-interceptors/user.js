@@ -165,6 +165,10 @@ exports.rechargeInteral = async ({data,session}) => {
 	await session.execute(`add {record}`,{interal:data.interal,user:{userId:data.userId},way:"充值"})
 }
 
+/**
+ * 管理员登录
+ * @param param
+ */
 exports.adminLogin = ({param}) => {
 	const admin = adminInfos.filter(admin => admin.phone == param.phone && md5(admin.password) == param.password)[0]
 	if (admin != null) {

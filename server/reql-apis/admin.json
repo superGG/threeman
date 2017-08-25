@@ -71,5 +71,17 @@
       }
     },
     "comment" :"所有充值记录"
+  },{
+    "url" : "/admin/record/list/count",
+    "reql" : "count [record($dynamic page $page, $pageSize order createTime desc):{*}]",
+    "param" :{
+      "userDynamic" :{
+        "default" : "userId>0"
+      },
+      "dynamic" : {
+        "default" : "recordId>0"
+      }
+    },
+    "comment" :"所有充值记录"
   }]
 }
