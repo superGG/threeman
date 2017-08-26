@@ -36,6 +36,11 @@
     "registerTime" : {
       "type" : "date",
       "comment" : "注册时间"
+    },
+    "records":{
+      "type":"array",
+      "hasMany" : "record",
+      "mappedby" :"user"
     }
   },
   "role" : {
@@ -52,11 +57,6 @@
       "type" : "enum",
       "values" : ["普通", "公有", "超级管理员"],
       "default" : "普通"
-    },
-    "users" : {
-      "type" : "array",
-      "hasMany" : "user",
-      "mappedby" : "role"
     },
     "actions" : {
       "type" : "array",
@@ -127,8 +127,8 @@
       "default" : "打牌"
     },
     "user" : {
-      "type" : "object",
-      "belongsTo" :"user"
+      "type": "object",
+      "belongsTo": "user"
     },
     "createTime" : {
       "type" :"date",

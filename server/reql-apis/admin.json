@@ -38,9 +38,9 @@
     "reql" : "update {user}",
     "comment" : "更新用户"
   },{
-    "url" : "/admin/getUser",
+    "url" : "/admin/getUserByPhone",
     "reql" : "query {user(phone=$phone) : {userId,phone,lastLoginTime,registerTime}}",
-    "comment" : "获取用户详情"
+    "comment" : "根据用户手机获取用户详情"
   },{
     "url" : "/admin/questionList",
     "reql" : "query [question : {*}]",
@@ -61,7 +61,7 @@
     "comment" : "充值积分"
   },{
     "url" : "/admin/record/list",
-    "reql" : "query [record($dynamic page $page, $pageSize order createTime desc):{interal,user($userDynamic):{userId,name,phone,image},way,createTime}]",
+    "reql" : "query [record($dynamic page $page, $pageSize order createTime desc):{recordId,interal,user($userDynamic):{userId,name,phone,image},way,createTime}]",
     "param" :{
       "userDynamic" :{
         "default" : "userId>0"
@@ -82,6 +82,6 @@
         "default" : "recordId>0"
       }
     },
-    "comment" :"所有充值记录"
+    "comment" :"所有充值记录数量"
   }]
 }
