@@ -53,7 +53,7 @@ $(function() {
 
       var url = data.files.userAvatar;
       userAvatarUrl = url;
-      $('.weui-uploader__file').removeClass("weui-uploader__file_status").css("background", "url(http://192.168.0.102:8080"+ url +")");
+      $('.weui-uploader__file').removeClass("weui-uploader__file_status").css("background", "url("+ baseUrl + url +")");
       $('.weui-uploader__file-content').css("display", "none");
 
     })
@@ -90,7 +90,7 @@ $(function() {
         weui.toast("更新成功！", {
           duration: 3000,
           callback: function() {
-            window.location.href = '/'
+            window.location.href = '/userInfo'
           }
         })
       })
