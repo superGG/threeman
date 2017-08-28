@@ -44,11 +44,10 @@ exports.start = async function (sockets, yuanData) {
                 room.userList[user.userId].bet = 0;         //玩家下注金额
                 room.poker = poker;
                 socket.join(room.roomId)
-                roomList[room.roomId] = room
-                var result = {result: true, room}
                 console.log(user.name + "用户创建" + room.roomId + "房间")
-                sockets.to(room.roomId).emit('createRoom', result);
+                sockets.to(room.roomId).emit('createRoom', {result: true, room:roomList[room.roomId]});
             } catch (e) {
+                console.log('Failed to create romm by the user')
                 console.log(e)
             }
         });

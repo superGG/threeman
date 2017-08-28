@@ -173,7 +173,7 @@ exports.adminLogin = ({param}) => {
 	const admin = adminInfos.filter(admin => admin.phone == param.phone && md5(admin.password) == param.password)[0]
 	if (admin != null) {
 		const token = jwt.sign({
-			//一周过期
+			//一天过期
 			// (60 * 60 * 24 * 7)
 			exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
 			data: {

@@ -73,7 +73,7 @@
     "comment" :"所有充值记录"
   },{
     "url" : "/admin/record/list/count",
-    "reql" : "count [record($dynamic page $page, $pageSize order createTime desc):{*}]",
+    "reql" : "count [record($dynamic page $page, $pageSize order createTime desc):{*,user($userDynamic):{*}}]",
     "param" :{
       "userDynamic" :{
         "default" : "userId>0"
