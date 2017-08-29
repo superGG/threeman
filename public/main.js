@@ -126,12 +126,10 @@
      var id = e.target.id;
      var type = e.target.type;
 
-     console.log(type);
 
      if(type === 'chip') {
 
        var val = e.target.innerHTML;
-       console.log(val);
        socket.emit('bet', {
          roomId: roomId,
          user: user,
@@ -323,13 +321,11 @@
 
   socket.on("roomInfo", function(data) {
 
-    console.log("roomInfo")
 
     if(errorServer(data)) {
       return false
     }
 
-    console.log(data);
 
     chip = data.room.minChip;
     renderUserInfo(data.room);
@@ -337,7 +333,6 @@
 
   socket.on("readyGame", function(data) {
 
-    console.log("readyGame")
     if(errorServer(data)) {
       return false
     }
@@ -361,7 +356,6 @@
   });
 
   socket.on('bet', function(data) {
-    console.log("bet")
 
     if(errorServer(data)) {
       return;
@@ -383,7 +377,6 @@
 
   socket.on('deal', function(data) {
 
-    console.log("deal")
     if(errorServer(data)) {
       return false
     }
@@ -402,7 +395,6 @@
   });
 
   socket.on('compare', function(data) {
-    console.log('compare')
     if(errorServer(data)) {
       return false
     }
@@ -414,7 +406,6 @@
 
   socket.on('endGame', function(data) {
 
-    console.log('endGame')
     if(errorServer(data)) {
       return false
     }
@@ -425,7 +416,6 @@
 
   socket.on("leaveRoom", function(data) {
 
-    console.log('leaveRoom')
     if(errorServer(data)) {
       return false
     }
@@ -443,7 +433,6 @@
 
   socket.on("closeRoom", function(data) {
 
-    console.log('closeRoom')
     if(errorServer(data)) {
       return false
     }
@@ -463,7 +452,6 @@
   var width = document.documentElement.clientWidth;
   var height =  document.documentElement.clientHeight;
   if( width < height ){
-    console.log(width + " " + height);
     $print =  $('#print');
     $print.width(height);
     $print.height(width);
@@ -476,7 +464,6 @@
   var evt = "onorientationchange" in window ? "orientationchange" : "resize";
 
   window.addEventListener(evt, function() {
-    console.log(evt);
     var width = document.documentElement.clientWidth;
     var height =  document.documentElement.clientHeight;
     $print =  $('#print');

@@ -41,7 +41,6 @@ $(function() {
       return false
     }
 
-    console.log(data);
 
     userList = merge({}, userList, data.room.userList);
     roomId = data.room.roomId;
@@ -56,8 +55,6 @@ $(function() {
       return false
     }
 
-    console.log('leave');
-    console.log(data);
 
     if(data.leaveUser.userId == userId) {
       weui.toast("操作成功", {
@@ -82,7 +79,6 @@ $(function() {
     userList = data.room.userList;
     updateSite();
 
-    console.log(userList)
   });
 
   socket.on("closeRoom", function(data) {
@@ -151,7 +147,6 @@ $(function() {
       roomId: roomId,
       user: user
     }, function() {
-      console.log("end")
     })
   });
 
@@ -169,7 +164,6 @@ $(function() {
     var urlInput = $('#room_code').get(0);
     urlInput.select(); // 选择对象
     document.execCommand("Copy");
-    console.log('copy');
   });
 
   $(".weui-select").change(function(e) {
