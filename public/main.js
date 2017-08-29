@@ -48,7 +48,7 @@
     var pokerStr = '';
     poker.forEach(function(item, index) {
 
-      var pokerSrc = item.number + "_" + (item.color -  1) + ".png";
+      var pokerSrc = item.number + "_" + Math.abs(item.color - 4) + ".png";
       pokerStr = pokerStr + '<div class="poker__out"><div class="poker__bg"></div>' +
         '<div class="poker__a" style="background-image:url(/poker/' + pokerSrc +');"></div></div>';
     });
@@ -90,11 +90,13 @@
       var betStr = userList[p].bet ? '<span class="money" style="display:block;">下注：' + userList[p].bet +'积分</span>' :
         '<span class="money">下注：积分</span>';
 
-        userStr = '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
+        userStr = userStr + '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
         + '<div class="avatar"><img src="'+ baseUrl + userList[p].avatar +'" alt=""></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
         + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
         '<span class="ready">' + readyStr +'</span> ' + betStr +'</div>'
+
+      i ++;
     }
 
     i = 0;
@@ -212,10 +214,10 @@
 
       var pokerHtml = '';
       item.poker.forEach(function(item, index) {
-        pokerHtml = pokerHtml + '<img src="/poker/'+ item.number + '_' + Math.abs(item.color - 1)+'.png" alt="">';
+        pokerHtml = pokerHtml + '<img src="/poker/'+ item.number + '_' + Math.abs(item.color - 4)+'.png" alt="">';
       });
 
-      var val = item.result.rank === 5 ? "三公" : item.result.number;
+      var val = item.result.rank === 5 ? "三公" : item.result.number + "点";
 
 
       str = str + '<div class="item"> ' +

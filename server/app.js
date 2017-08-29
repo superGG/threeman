@@ -19,13 +19,15 @@ const YuanData = require('yuan-data')
 
 const socket = require('./socket/socket')
 
+const routeConfig = require('./route');
+
 const app = new Koa()
 
 const start = async() => {
     const config = await configAsync(__server + '/config.json')
     app.use(logger())
     app.use(cors())
-    app.use(koaStatic(path.resolve(__dirname, '../public'), {maxage: 60 * 24}))
+    app.use(koaStatic(path.resolve(__dirname, '../public'), {maxage: 60 * 24}));
     app.use(route.get('/admin*', async ctx => {
         ctx.type = 'html';
         ctx.body = fs.createReadStream(path.join(__dirname, '../admin/index.html'))
@@ -36,11 +38,21 @@ const start = async() => {
         ctx.body = fs.createReadStream(path.join(__dirname, 'socketTest.html'))
     }));
 
+  // /main /register /userInfoSet /userInfo /waitRoom
+
+    app.use(route.get('/', routeConfig.getConfig('/')));
+    app.use(route.get('/main', routeConfig.getConfig('main')));
+    app.use(route.get('/register', routeConfig.getConfig('register')));
+    app.use(route.get('/userInfoSet', routeConfig.getConfig('userInfoSet')));
+    app.use(route.get('/userInfo', routeConfig.getConfig('userInfo')));
+    app.use(route.get('/waitRoom', routeConfig.getConfig('waitRoom')))
+
     app.use(bodyParser({
         jsonLimit: '5mb', // 控制body的parse转换大小 default 1mb
         formLimit: '4096mb'  //  控制你post的大小  default 56kb
 
-    }))
+    }));
+
 
     let yuanData = YuanData.create(config.reql)
     await yuanData.connect()

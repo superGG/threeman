@@ -33,7 +33,7 @@ $(function() {
             duration: 3000,
             callback: function() {
 
-              window.location.href = "/set_user_info"
+              window.location.href = "/userInfoSet"
             }
           })
         }
