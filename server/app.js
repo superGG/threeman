@@ -47,6 +47,7 @@ const start = async() => {
     app.use(route.get('/userInfo', routeConfig.getConfig('userInfo')));
     app.use(route.get('/waitRoom', routeConfig.getConfig('waitRoom')))
 
+    //设置上传图片的大小
     app.use(bodyParser({
         jsonLimit: '5mb', // 控制body的parse转换大小 default 1mb
         formLimit: '4096mb'  //  控制你post的大小  default 56kb
