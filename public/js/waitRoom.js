@@ -182,7 +182,4 @@ $(function() {
   })
 });
 
-window.onbeforeunload = function(){
-  return "必您确定要退出页面并关闭房间吗？";
-}
 
