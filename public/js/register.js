@@ -19,26 +19,26 @@ $(function() {
         return
       }
 
-      var vcodeBtn = $("#vcode");
+      // var vcodeBtn = $("#vcode");
 
 
-      var i = 60;
-      var timer = setInterval(function() {
+      // var i = 60;
+      // var timer = setInterval(function() {
 
-        if(i == 0) {
+      //   if(i == 0) {
 
-          vcodeBtn.html("获取验证码")
-          vcodeBtn.attr("disabled", false)
-          i = 60;
-          clearInterval(timer);
-          return;
-        };
+      //     vcodeBtn.html("获取验证码")
+      //     vcodeBtn.attr("disabled", false)
+      //     i = 60;
+      //     clearInterval(timer);
+      //     return;
+      //   };
 
-        vcodeBtn.attr("disabled", true)
+      //   vcodeBtn.attr("disabled", true)
 
-        vcodeBtn.html(i + "s");
-        i--;
-      }, 1000)
+      //   vcodeBtn.html(i + "s");
+      //   i--;
+      // }, 1000)
     })
   });
 
@@ -55,15 +55,15 @@ $(function() {
       &&
         checkRequired(password, "密码")
       &&
-        checkRequired(code, "验证码")
-      &&
+      //   checkRequired(code, "验证码")
+      // &&
         checkAgree(agree)
     ){
 
-
+      // ?code=" + code
       $.ajax({
         method: "POST",
-        url: serverUrl + "user/register?code=" + code,
+        url: serverUrl + "user/register",
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify({
           "data" :{

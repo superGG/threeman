@@ -26,14 +26,16 @@ $(function() {
 
         if(data.result) {
 
+          var baseUrl = data.result.user.name === data.result.user.phone ? '/userInfoSet' : '/userInfo'
+
           localStorage.setItem("token", data.result.token);
-          localStorage.setItem("userId", data.result.userId);
+          localStorage.setItem("userId", data.result.user.userId);
 
           weui.toast("登录成功", {
             duration: 3000,
             callback: function() {
 
-              window.location.href = "/userInfoSet"
+              window.location.href = baseUrl
             }
           })
         }
