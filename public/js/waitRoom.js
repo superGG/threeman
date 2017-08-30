@@ -10,47 +10,6 @@ $(function() {
     })
   }
 
-  $.ajax({
-    url: serverUrl + "user/getUserInfoById?userId=" + userId,
-    method: "POST"
-  }).success(function(data) {
-
-    var _user = data.result;
-    localStorage.setItem("name", data.result.name);
-    localStorage.setItem("avatar", data.result.image)
-    localStorage.setItem("interal", data.result.interal)
-
-    user = {
-      name: _user.name,
-      avatar: _user.image,
-      interal: _user.interal,
-      userId: _user.userId
-    }
-
-    if(option === "create") {
-      
-        var loading = weui.loading("loading");
-        socket.emit('createRoom', { user: user });
-    
-        $("#cancel").css("display", "none");
-      }
-    
-      if(option === "join") {
-    
-        var loading = weui.loading("请求中");
-    
-        $("#room_code").val(location.href)
-    
-        socket.emit("joinRoom", {
-          user: user,
-          roomId: roomId
-        })
-    
-        $("#close").css("display", "none");
-        $("#start").css("display", "none");
-      }
-  })
-
   for(var i = 0, len = paramArr.length; i < len; i++) {
 
     if(paramArr[i].split("=")[0] === "option"){
@@ -74,7 +33,12 @@ $(function() {
     i = 0;
   };
 
- 
+  var user = {
+    userId: localStorage.getItem("userId"),
+    name: localStorage.getItem("name"),
+    avatar: localStorage.getItem("avatar"),
+    interal: localStorage.getItem("interal")
+  };
 
   socket.on('createRoom', function(data) {
 
@@ -159,6 +123,29 @@ $(function() {
       window.location.href = '/main?roomId=' + roomId + "&role=" + role;
     }, 3000)
   });
+
+  if(option === "create") {
+
+    var loading = weui.loading("loading");
+    socket.emit('createRoom', { user: user });
+
+    $("#cancel").css("display", "none");
+  }
+
+  if(option === "join") {
+
+    var loading = weui.loading("请求中");
+
+    $("#room_code").val(location.href)
+
+    socket.emit("joinRoom", {
+      user: user,
+      roomId: roomId
+    })
+
+    $("#close").css("display", "none");
+    $("#start").css("display", "none");
+  }
 
   $("#cancel").click(function() {
 
