@@ -22,10 +22,12 @@ const addSalt = text => md5(salt + text)
  * @param param
  * @param cache
  */
-exports.sendSMSCode = async function ({param, cache}) {
+exports.sendSMSCode = async function ({param, cache,session}) {
     let code = null;
     const {phone, x} = param;
     if (phone == null) return new HttpError('手机号不能为空', 103);
+	let user = await session.query(`query {user(phone=$phone):{*}}`,{phone})
+	if(user!=null) throw new HttpError('该手机号已被注册', 103);
 
     let tmpPhone  = await cache.get(`${phone}-sms-phone`);
     if (tmpPhone!=null) return new HttpError('操作过于频繁，请稍后再试', 103);
@@ -33,7 +35,7 @@ exports.sendSMSCode = async function ({param, cache}) {
     let response = null
     if ((x != null && x == md5(phone + 'code')) || (process.env.NODE_ENV === 'production')) {  //生产环境
     code = new String(Math.random()).substring(2, 8)
-    const sms = `【OE加速器】您的验证码是${code}，30分钟过期`
+    const sms = `【小游戏】您的验证码是${code}，30分钟过期`
         response = await axios.post('http://api.smsbao.com/sms', querystring.stringify({
     	u: 'TOFF2017',
     	p: md5('35889374'),
