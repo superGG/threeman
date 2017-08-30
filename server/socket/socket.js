@@ -248,7 +248,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
                     if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
                         //发牌
-                        threeman.se tPlayer(roomList[roomId].userList, roomList[roomId].poker);
+                        threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
                         console.log(roomId + "房间的玩家已经全部下注，可以开始发牌")
                         sockets.to(roomId).emit('deal', {room: roomList[roomId]});
                         //5秒后显示结果
