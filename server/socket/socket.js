@@ -266,12 +266,15 @@ exports.start = async function (sockets, yuanData) {
                                         interal: (Number(user.interal) + user.result.count)
                                     })
                                 ));
-                                await Promise.all(Object.keys(roomList[roomId].userList).map(userId=>{
-                                        let temUser = session.query(`query {user(userId=$userId):{interal}}`,{userId})
+                                await Promise.all(Object.keys(roomList[roomId].userList).map(async userId=>{
+                                        let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`,{userId:Number(userId)})
+                                        console.log(`${temUser.name}的最新积分${temUser.interal}`)
                                         roomList[roomId].userList[userId].interal = temUser.interal;
                                     })
                                 );
+                                
                                 //添加积分记录
+                                console.log("-------------------add record-------")
                                 await Promise.all(userArray.map(user =>
                                     session.execute(`add {record}`, {
                                         interal: user.result.count,
