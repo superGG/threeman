@@ -91,7 +91,7 @@
         '<span class="money">下注：积分</span>';
 
         userStr = userStr + '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
-        + '<div class="avatar"><img src="'+ baseUrl + userList[p].avatar +'" alt=""></div>'
+        + '<div class="avatar"><img src="'+ baseUrl + userList[p].image +'" alt=""></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
         + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
         '<span class="ready">' + readyStr +'</span> ' + betStr +'</div>'
@@ -109,14 +109,14 @@
    */
   var renderMyinfo = function(myInfo) {
 
-    $(".my .userInfo .avatar img").attr("src", baseUrl + myInfo.avatar);
+    $(".my .userInfo .avatar img").attr("src", baseUrl + myInfo.image);
     $(".my .userInfo .nick").html(myInfo.name);
     $(".my .userInfo .count").html(myInfo.interal);
     $(".my .poker").html(renderPoker(myInfo.poker));
 
-    $('.chip').css('display', 'none');
+    $('.my .chip').css('display', 'none');
     if(myInfo.bet) {
-      $('.chip').css('display', 'block');
+      $('.my .chip').css('display', 'block');
       $('.chip .money').html(myInfo.bet + '积分');
     }
   };
@@ -180,7 +180,7 @@
 
   $('#close-result').click(function() {
     $(".result_alert").css('display', "none");
-    clearInterval(timer);
+    clearTimeout(timer);
     if(role == 1) {
       renderOption(4)
     }else {
@@ -229,10 +229,7 @@
 
     $(".result_alert").css("display", "block").find('.content').html(str)
 
-    timer = takeTime(20, function(i) {
-
-      $('.result_alert .subtitle .count').html(20 - i)
-    }, function() {
+    timer = takeTime(20, function() {
 
       $('.result_alert').css('display', "none");
 
@@ -242,6 +239,16 @@
         renderOption(6)
       }
     })
+
+    var i = 0;
+    var secTimer = setInterval(function() {
+      if(i >= 20) {
+        clearInterval(secTimer);
+        i = 0
+      }
+      $('.result_alert .subtitle .count').html(20 - i)
+      i++
+    }, 1000)
 
     return str;
   };
@@ -364,7 +371,7 @@
 
     if(user.userId === betUser.userId) {
       $(".chip .money").html(chip + '积分')
-      $(".chip").css("display", "block");
+      $(".my .chip").css("display", "block");
       renderOption();
     }else {
 
@@ -409,6 +416,7 @@
       return false
     }
 
+    clearTimeout(timer)
     renderUserInfo(data.room);
   });
 

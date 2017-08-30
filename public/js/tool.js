@@ -98,18 +98,20 @@ var merge = function() {
 
 };
 
-var takeTime = function(count, ex, cb) {
+var takeTime = function(count, cb) {
 
-  var i = 0;
-
-  var timer = setInterval(function() {
-    ex(i);
-    if(++i > count) {
-
-      clearInterval(timer);
-      cb();
-    }
-  }, 1000)
+  var timer = setTimeout(function() {
+    clearTimeout(timer);
+    cb();
+  }, 1000 * count)
 
   return timer;
 };
+
+var inOtherRoom = function(error) {
+  if(error.code == 110) {
+    return true;
+  }
+
+  return false;
+}
