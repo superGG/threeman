@@ -27,11 +27,13 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 创建房间
          */
-        socket.on('createRoom', function (data) {
+        socket.on('createRoom', async(data) => {
             try {
                 var user = data.user
-                if (checkUser(user)) {
-                    socket.emit('createRoom', {result: false, message: "用户已经加入别的房间"});
+                let session = await yuanData.createSession();
+                user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                if (user!=null && checkUser(user)) {
+                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
                     return;
                 }
                 var room = {};
@@ -39,9 +41,9 @@ exports.start = async function (sockets, yuanData) {
                 room.roomId = UUID.v1(); //房间id
                 room.minChip = 50;          //房间最低下注金额
                 room.start = false;     //房间游戏状态
+                user.ready = false;//玩家准备状态
+                user.bet = 0; //玩家下注金额
                 room.userList[user.userId] = user;
-                room.userList[user.userId].ready = false;   //玩家准备状态
-                room.userList[user.userId].bet = 0;         //玩家下注金额
                 room.poker = poker;
                 roomList[room.roomId] = room;
                 socket.join(room.roomId)
@@ -74,9 +76,11 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('joinRoom', {result: false, message: "该用户的积分不够"});
                         return;
                     }
+                    user.ready = false;//玩家准备状态
+                    user.bet = 0; //玩家下注金额
                     roomList[roomId].userList[user.userId] = user;
-                    roomList[roomId].userList[user.userId].ready = false;
-                    roomList[roomId].userList[user.userId].bet = 0;
+                    // roomList[roomId].userList[user.userId].ready = false;
+                    // roomList[roomId].userList[user.userId].bet = 0;
                     socket.join(roomId)
                     console.log(user.name + "加入" + roomId + "房间")
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
@@ -244,7 +248,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
                     if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
                         //发牌
-                        threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
+                        threeman.se tPlayer(roomList[roomId].userList, roomList[roomId].poker);
                         console.log(roomId + "房间的玩家已经全部下注，可以开始发牌")
                         sockets.to(roomId).emit('deal', {room: roomList[roomId]});
                         //5秒后显示结果
