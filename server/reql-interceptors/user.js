@@ -62,13 +62,13 @@ exports.sendSMSCode = async function ({param, cache,session}) {
  * @param cache
  */
 exports.register = async function ({param, data, session, cache}) {
-	const {code} = param
+	// const {code} = param
 	const {phone} = data
-	const tmpCode = await cache.get(`${phone}-sms-code`)
-	if (tmpCode != code) {
-		return new HttpError('验证码错误', 103)
-	}
-	await cache.remove(`${phone}-sms-code`)
+	// const tmpCode = await cache.get(`${phone}-sms-code`)
+	// if (tmpCode != code) {
+	// 	return new HttpError('验证码错误', 103)
+	// }
+	// await cache.remove(`${phone}-sms-code`)
 	const count = await session.query('count [user(phone = $phone) : {userId}]', {phone : data.phone})
 	if (count > 0) {
 		return new HttpError('号码已经被注册', 102)
