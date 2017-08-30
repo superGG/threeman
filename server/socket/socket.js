@@ -59,6 +59,7 @@ exports.start = async function (sockets, yuanData) {
         socket.on('joinRoom', async(data) => {
             try {
                 var {roomId, user} = data
+                let session = await yuanData.createSession();
                 user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
                 if (user!=null && checkUser(user)) {
                     socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
