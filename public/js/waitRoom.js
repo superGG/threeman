@@ -4,6 +4,12 @@ $(function() {
   var userList = {}, roomId = '', option = "";
   var userId = localStorage.getItem('userId');
 
+  if(!userId) {
+    weui.alert('请先登录！', function() {
+      window.location.href = '/'
+    })
+  }
+
   for(var i = 0, len = paramArr.length; i < len; i++) {
 
     if(paramArr[i].split("=")[0] === "option"){

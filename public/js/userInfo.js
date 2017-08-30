@@ -7,7 +7,7 @@ $(function() {
     method: "POST"
   }).success(function(data) {
 
-    $(".user-avatar .avatar").css("background", "url(" + baseUrl + data.result.image + ")")
+    $(".user-avatar .avatar").css("background-image", "url(" + baseUrl + data.result.image + ")")
     $(".user-avatar .user-name").html(data.result.name);
     $(".user-avatar .count span").html(data.result.interal);
     user = data.result;
