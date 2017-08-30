@@ -34,7 +34,7 @@ exports.start = async function (sockets, yuanData) {
                 let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
                 user = db_user.getPlain();
                 if (user!=null && checkUser(user)) {
-                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
+                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间",code:110});
                     return;
                 }
                 var room = {};
@@ -66,16 +66,16 @@ exports.start = async function (sockets, yuanData) {
                 let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
                 user = db_user.getPlain();
                 if (user!=null && checkUser(user)) {
-                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
+                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间",code:110});
                     return;
                 }
                 if (roomList[roomId] != null) {
                     if (roomList[roomId].start) {
-                        socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏"});
+                        socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏",code:111});
                         return;
                     }
                     if (user.interal < roomList[roomId].minChip) {
-                        socket.emit('joinRoom', {result: false, message: "该用户的积分不够"});
+                        socket.emit('joinRoom', {result: false, message: "该用户的积分不够",code:112});
                         return;
                     }
                     user.ready = false;//玩家准备状态
