@@ -320,8 +320,6 @@
   });
 
   socket.on("roomInfo", function(data) {
-
-
     if(errorServer(data)) {
       return false
     }
