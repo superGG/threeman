@@ -402,6 +402,7 @@
     var userArray = data.userArray;
 
     renderResult(userArray)
+    renderUserInfo(data.room)
   });
 
   socket.on('endGame', function(data) {
