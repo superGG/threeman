@@ -56,14 +56,15 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 加入房间
          */
-        socket.on('joinRoom', function (data) {
+        socket.on('joinRoom', async(data) => {
             try {
                 var {roomId, user} = data
+                user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                if (user!=null && checkUser(user)) {
+                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
+                    return;
+                }
                 if (roomList[roomId] != null) {
-                    if (checkUser(user)) {
-                        socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
-                        return;
-                    }
                     if (roomList[roomId].start) {
                         socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏"});
                         return;
@@ -148,6 +149,8 @@ exports.start = async function (sockets, yuanData) {
                         socket.join(roomId);
                     }
                     socket.emit('roomInfo', {result: true, room: roomList[roomId]});
+                } else {
+                    socket.emit('roomInfo', {result: false, message:"该房间已关闭"});
                 }
             } catch (e) {
                 console.log(e)
@@ -256,6 +259,11 @@ exports.start = async function (sockets, yuanData) {
                                         interal: (Number(user.interal) + user.result.count)
                                     })
                                 ));
+                                await Promise.all(Object.keys(roomList[roomId].userList).map(userId=>{
+                                        let temUser = session.query(`query {user(userId=$userId):{interal}}`,{userId})
+                                        roomList[roomId].userList[userId].interal = temUser.interal;
+                                    })
+                                );
                                 //添加积分记录
                                 await Promise.all(userArray.map(user =>
                                     session.execute(`add {record}`, {
@@ -263,7 +271,7 @@ exports.start = async function (sockets, yuanData) {
                                         user: {userId: user.userId}
                                     })
                                 ));
-                                sockets.to(roomId).emit('compare', {userArray});
+                                sockets.to(roomId).emit('compare', {userArray,room:roomList[roomId]});
                                 console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
                             }, 15000);
                         } catch (err) {
