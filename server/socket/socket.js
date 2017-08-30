@@ -31,7 +31,8 @@ exports.start = async function (sockets, yuanData) {
             try {
                 var user = data.user
                 let session = await yuanData.createSession();
-                user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                user = db_user.getPlain();
                 if (user!=null && checkUser(user)) {
                     socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
                     return;
@@ -62,7 +63,8 @@ exports.start = async function (sockets, yuanData) {
             try {
                 var {roomId, user} = data
                 let session = await yuanData.createSession();
-                user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                user = db_user.getPlain();
                 if (user!=null && checkUser(user)) {
                     socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
                     return;
