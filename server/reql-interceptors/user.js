@@ -89,7 +89,7 @@ exports.register = async function ({param, data, session, cache}) {
  */
 exports.login = async function ({param, session}) {
 	param.password = addSalt(param.password)
-	const user = await session.query(`query {user(phone = $phone && password = $password) : {userId, phone}}`, param)
+	const user = await session.query(`query {user(phone = $phone && password = $password) : {userId, phone,name,image}}`, param)
 	if (user !== null) {
 		const token = jwt.sign({
 			//24小时过期，暂时设置为1周过期
@@ -103,8 +103,7 @@ exports.login = async function ({param, session}) {
         user.lastLoginTime = new Date();
         await user.save();
 		return {
-			userId : user.userId,
-			phone : user.phone,
+			user,
 			token : token
 		}
 	} else {
