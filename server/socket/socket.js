@@ -258,7 +258,7 @@ exports.start = async function (sockets, yuanData) {
                                         interal: (Number(user.interal) + user.result.count)
                                     })
                                 ));
-                                await Promise.all(Object.keys(roomList[roomId].userList).forEach(userId=>{
+                                await Promise.all(Object.keys(roomList[roomId].userList).map(userId=>{
                                         let temUser = session.query(`query {user(userId=$userId):{interal}}`,{userId})
                                         roomList[roomId].userList[userId].interal = temUser.interal;
                                     })
