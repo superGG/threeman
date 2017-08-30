@@ -53,7 +53,7 @@ $(function() {
 
       var url = data.files.userAvatar;
       userAvatarUrl = url;
-      $('.weui-uploader__file').removeClass("weui-uploader__file_status").css("background", "url("+ baseUrl + url +")");
+      $('.weui-uploader__file').removeClass("weui-uploader__file_status").css("background-image", "url("+ baseUrl + url +")");
       $('.weui-uploader__file-content').css("display", "none");
 
     })

@@ -32,211 +32,6 @@
         height : 100% ;
     }
 
-    .my {
-        position: fixed;
-        bottom: 20px;
-        text-align: center;
-        width: 100%;
-        margin-left: 20px;
-    }
-
-    .my .option ul {
-        list-style: none;
-        font-size: 14px;
-        width: 400px;
-        display: block;
-        margin: 0 auto;
-        padding: 20px 10px;
-        background: rgba(0,0,0,0.8);
-        border-radius: 5px;
-    }
-
-    .my .option ul li {
-        padding: 5px 10px;
-        display: inline-block;
-        background: #e08f20;
-        border-radius: 5px;
-        margin-right: 10px;
-    }
-
-    .my .userInfo, .my .poker {
-        float: left;
-    }
-
-    .my .userInfo {
-        margin-right: 100px;
-        background: rgba(0, 0, 0, 0.6);
-        color: #fff;
-        font-weight: bold;
-        padding: 5px;
-        border-radius: 10px;
-        font-size: 12px;
-    }
-
-    .my .userInfo .info {
-        float: left;
-    }
-
-    .my .userInfo .nick, .count {
-        text-align: left;
-    }
-
-    .my .userInfo::after {
-        display: block;
-        clear: both;
-        height: 0px;
-        width: 0px;
-    }
-
-    .my .userInfo .avatar {
-        width: 40px;
-        height: 40px;
-        float: left;
-        overflow: hidden;
-    }
-
-    .my .userInfo .avatar img {
-        width: 100%;
-    }
-
-    .my .out_icon {
-        float: right;
-        margin-right: 30px;
-        vertical-align: top;
-        line-height: 21px;
-        color: #fff;
-    }
-
-    .my .out_icon img {
-        width: 20px;
-        float: right;
-    }
-
-    .my .option {
-        position: absolute;
-        bottom: 0;
-        color: #fff;
-        width: 100%;
-        display: none;
-    }
-
-    .my .chip {
-        display: none;
-        margin-right: 30px;
-        vertical-align: top;
-        line-height: 21px;
-        color: #fff;
-        position: absolute;
-        right: 60px;
-        font-size: 14px;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 5px;
-    }
-
-    .my .chip {
-        background: rgba(0, 0, 0, 0.8);
-        padding: 5px;
-    }
-
-    .my .chip h4 {
-        margin: 0;
-        font-size: 12px;
-    }
-
-    .my .chip .money {
-        background: #ac3014;
-        color: #f1ec25;
-    }
-
-    .poker img{
-        height: 80px;
-    }
-
-    .other .one {
-        position: absolute;
-        top: 5%;
-        left: 30px;
-    }
-
-    .other .two {
-        position: absolute;
-        top: 35%;
-        left: 30px;
-    }
-
-    .other .three {
-        position: absolute;
-        top: 5%;
-        left: 40%;
-    }
-
-    .other .four {
-        position: absolute;
-        top: 5%;
-        right: 15px;
-    }
-
-    .other .five {
-        position: absolute;
-        top: 35%;
-        right: 15px;
-    }
-
-    .other .player {
-    }
-
-    .other .player .ready {
-        color: #fff;
-    }
-
-    .other .player .money {
-        font-size: 12px;
-        position: absolute;
-        left: 65px;
-        bottom: -10px;
-        color: #fffc48;
-        background: #bf451c;
-        padding: 5px;
-        display: none;
-        width: 80px;
-        z-index: 1;
-    }
-
-    .other .player .pokerBg {
-        float: left;
-        margin-left: 40px;
-    }
-
-    .other .player .pokerBg img {
-        width: 40px;
-        margin-left: -30px;
-    }
-
-    .other .player .userInfo {
-        background: rgba(0, 0, 0, 0.6);
-        font-size: 8px;
-        font-weight: bold;
-        padding: 5px;
-        color: #fff;
-        width: 50px;
-        float: left;
-    }
-
-    .other .player .userInfo span {
-        display: block;
-    }
-
-    .other .player .userInfo .avatar {
-        width: 40px;
-        height: 40px;
-        margin-left: 9px;
-        overflow: hidden;
-    }
-
-
-    .other .player .userInfo .avatar img {
-        width: 100%;
-    }
 }
 #print p{
     margin: auto ;
@@ -422,4 +217,211 @@
 }
 .poker__out.active .poker__a{
     transform:rotateY(0deg);
+}
+
+
+.my {
+    position: fixed;
+    bottom: 20px;
+    text-align: center;
+    width: 100%;
+    margin-left: 20px;
+}
+
+.my .option ul {
+    list-style: none;
+    font-size: 14px;
+    width: 400px;
+    display: block;
+    margin: 0 auto;
+    padding: 20px 10px;
+    background: rgba(0,0,0,0.8);
+    border-radius: 5px;
+}
+
+.my .option ul li {
+    padding: 5px 10px;
+    display: inline-block;
+    background: #e08f20;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.my .userInfo, .my .poker {
+    float: left;
+}
+
+.my .userInfo {
+    margin-right: 100px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.my .userInfo .info {
+    float: left;
+}
+
+.my .userInfo .nick, .count {
+    text-align: left;
+}
+
+.my .userInfo::after {
+    display: block;
+    clear: both;
+    height: 0px;
+    width: 0px;
+}
+
+.my .userInfo .avatar {
+    width: 40px;
+    height: 40px;
+    float: left;
+    overflow: hidden;
+}
+
+.my .userInfo .avatar img {
+    width: 100%;
+}
+
+.my .out_icon {
+    float: right;
+    margin-right: 30px;
+    vertical-align: top;
+    line-height: 21px;
+    color: #fff;
+}
+
+.my .out_icon img {
+    width: 20px;
+    float: right;
+}
+
+.my .option {
+    position: absolute;
+    bottom: 0;
+    color: #fff;
+    width: 100%;
+    display: none;
+}
+
+.my .chip {
+    display: none;
+    margin-right: 30px;
+    vertical-align: top;
+    line-height: 21px;
+    color: #fff;
+    position: absolute;
+    right: 60px;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 5px;
+}
+
+.my .chip {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 5px;
+}
+
+.my .chip h4 {
+    margin: 0;
+    font-size: 12px;
+}
+
+.my .chip .money {
+    background: #ac3014;
+    color: #f1ec25;
+}
+
+.poker img{
+    height: 80px;
+}
+
+.other .one {
+    position: absolute;
+    top: 5%;
+    left: 30px;
+}
+
+.other .two {
+    position: absolute;
+    top: 35%;
+    left: 30px;
+}
+
+.other .three {
+    position: absolute;
+    top: 5%;
+    left: 40%;
+}
+
+.other .four {
+    position: absolute;
+    top: 5%;
+    right: 15px;
+}
+
+.other .five {
+    position: absolute;
+    top: 35%;
+    right: 15px;
+}
+
+.other .player {
+}
+
+.other .player .ready {
+    color: #fff;
+}
+
+.other .player .money {
+    font-size: 12px;
+    position: absolute;
+    left: 65px;
+    bottom: -10px;
+    color: #fffc48;
+    background: #bf451c;
+    padding: 5px;
+    display: none;
+    width: 80px;
+    z-index: 1;
+}
+
+.other .player .pokerBg {
+    float: left;
+    margin-left: 40px;
+}
+
+.other .player .pokerBg img {
+    width: 40px;
+    margin-left: -30px;
+}
+
+.other .player .userInfo {
+    background: rgba(0, 0, 0, 0.6);
+    font-size: 8px;
+    font-weight: bold;
+    padding: 5px;
+    color: #fff;
+    width: 50px;
+    float: left;
+}
+
+.other .player .userInfo span {
+    display: block;
+}
+
+.other .player .userInfo .avatar {
+    width: 40px;
+    height: 40px;
+    margin-left: 9px;
+    overflow: hidden;
+}
+
+
+.other .player .userInfo .avatar img {
+    width: 100%;
 }
