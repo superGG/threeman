@@ -16,12 +16,8 @@
   var role = paramsArr[1].split('=')[1];
   var userId = localStorage.getItem('userId');
   var Msgloading = '', timer = '';
-  var user = {
-    name: localStorage.getItem("name"),
-    interal: localStorage.getItem("interal"),
-    avatar: localStorage.getItem("avatar"),
-    userId: localStorage.getItem("userId")
-  };
+  var user = ""
+  var start = true;
 
   var tansferNumToPic = function(numArr) {
 
@@ -180,6 +176,7 @@
 
   $('#close-result').click(function() {
     $(".result_alert").css('display', "none");
+    start = true;
     clearTimeout(timer);
     if(role == 1) {
       renderOption(4)
@@ -231,13 +228,16 @@
 
     timer = takeTime(20, function() {
 
+      if(!start){
+        if(role == 1) {
+          renderOption(4)
+        }else {
+          renderOption(6)
+        }
+      }
       $('.result_alert').css('display', "none");
 
-      if(role == 1) {
-        renderOption(4)
-      }else {
-        renderOption(6)
-      }
+     
     })
 
     var i = 0;
@@ -331,7 +331,7 @@
       return false
     }
 
-
+    user = data.room.userList[userId];
     chip = data.room.minChip;
     renderUserInfo(data.room);
   });
@@ -403,7 +403,8 @@
     if(errorServer(data)) {
       return false
     }
-
+    
+    start = false;
     var userArray = data.userArray;
 
     renderResult(userArray)
@@ -415,6 +416,8 @@
     if(errorServer(data)) {
       return false
     }
+
+    start = true;
 
     clearTimeout(timer)
     renderUserInfo(data.room);
