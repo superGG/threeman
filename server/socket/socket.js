@@ -56,14 +56,15 @@ exports.start = async function (sockets, yuanData) {
         /**
          * 加入房间
          */
-        socket.on('joinRoom', function (data) {
+        socket.on('joinRoom', async(data) => {
             try {
                 var {roomId, user} = data
+                user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                if (user!=null && checkUser(user)) {
+                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
+                    return;
+                }
                 if (roomList[roomId] != null) {
-                    if (checkUser(user)) {
-                        socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间"});
-                        return;
-                    }
                     if (roomList[roomId].start) {
                         socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏"});
                         return;
