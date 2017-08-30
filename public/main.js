@@ -323,7 +323,9 @@
 
   socket.emit("roomInfo", {
     roomId: roomId,
-    user: user
+    user: {
+      userId: userId
+    }
   });
 
   socket.on("roomInfo", function(data) {
