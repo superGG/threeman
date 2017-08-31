@@ -3,7 +3,7 @@
  */
 const threeman = require('../reql-interceptors/threeman')
 const axios = require('axios')
-const UUID = require('node-uuid')
+// const UUID = require('node-uuid')
 
 
 const poker = threeman.poker
@@ -20,7 +20,7 @@ exports.start = async function (sockets, yuanData) {
 
         //测试socket通信是否正常
         socket.on('test', function (data) {
-            console.log(UUID.v1())
+            // console.log(UUID.v1())
             socket.emit('test', data);
         });
 
@@ -39,7 +39,7 @@ exports.start = async function (sockets, yuanData) {
                 }
                 var room = {};
                 room.userList = {};
-                room.roomId = UUID.v1(); //房间id
+                room.roomId = createRoomId(); //房间id
                 room.minChip = 50;          //房间最低下注金额
                 room.start = false;     //房间游戏状态
                 user.ready = false;//玩家准备状态
@@ -363,6 +363,22 @@ function checkUser(user) {
         if (userList.hasOwnProperty(user.userId)) result = true;
     }
     return result;
+}
+
+/**
+ * 生成一个2位数的roomId
+ * @returns {*}
+ */
+function createRoomId() {
+    var result = true;
+    var roomId;
+    var length = 0
+    while(result && length < 90) {
+        roomId = Math.floor(Math.random()*89) + 10;
+        result = roomList.hasOwnProperty(roomId)? true : false
+        length++;
+    }
+    return roomId;
 }
 
 /**

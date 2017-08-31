@@ -2,6 +2,7 @@ var baseUrl = "http://120.77.246.32:1234";
 var serverUrl = baseUrl + "/api/";
 var socketUrl = "http://120.77.246.32:1234";
 var testUrl = "http://120.77.246.32:1234";
+// var testUrl = "http://120.77.246.32:1234";
 
 var checkInputVal = function(vals) {
 
