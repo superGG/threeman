@@ -16,10 +16,10 @@ $(function() {
           label: '回到房间',
           type: 'default',
           onClick: function(){
-            
+            window.location.href = "/waitRoom?roomId" + roomId
           }
       }, {
-          label: '离开原房间，并创建房间',
+          label: '离开原房间，并继续操作',
           type: 'primary',
           onClick: function(){ 
             loading = weui.loading('loading');
