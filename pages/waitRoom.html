@@ -33,6 +33,15 @@
             background-image: url(./kw.png);
         }
 
+        .site .avatar {
+            height: 100%;
+            line-height: 80px;
+            text-align: center;
+            color: #fff;
+            font-size: 30px;
+            overflow: hidden;
+        }
+
         .weui-cells {
             margin-top: 1.17647059em;
             background-color: #FFFFFF;
@@ -40,6 +49,11 @@
             font-size: 17px;
             overflow: hidden;
             position: relative;
+        }
+
+        .room__id {
+            font-size: 40px;
+            font-weight: bolder;
         }
     </style>
 </head>
@@ -58,15 +72,12 @@
             </div>
         </div>
         <div class="weui-cells">
-            <div class="weui-cell weui-cell_vcode">
+            <div class="weui-cell">
                 <div class="weui-cell__hd">
-                    <label class="weui-label">房间号连接</label>
+                    <label class="weui-label">房间号</label>
                 </div>
-                <div class="weui-cell__bd">
-                    <input class="weui-input" type="text" id="room_code" placeholder="房间号生成中">
-                </div>
-                <div class="weui-cell__ft">
-                    <button class="weui-vcode-btn copy" >复制房间号</button>
+                <div class="weui-cell__bd room__id">
+                    获取中
                 </div>
             </div>
         </div>
@@ -80,6 +91,7 @@
                         </div>
                         <div class="weui-uploader__bd">
                             <ul class="weui-uploader__files" id="uploaderFiles">
+                                <li class="weui-uploader__file site" ></li>
                                 <li class="weui-uploader__file site" ></li>
                                 <li class="weui-uploader__file site" ></li>
                                 <li class="weui-uploader__file site" ></li>

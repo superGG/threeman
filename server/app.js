@@ -45,7 +45,8 @@ const start = async() => {
     app.use(route.get('/register', routeConfig.getConfig('register')));
     app.use(route.get('/userInfoSet', routeConfig.getConfig('userInfoSet')));
     app.use(route.get('/userInfo', routeConfig.getConfig('userInfo')));
-    app.use(route.get('/waitRoom', routeConfig.getConfig('waitRoom')))
+    app.use(route.get('/waitRoom', routeConfig.getConfig('waitRoom')));
+    app.use(route.get('/joinRoom', routeConfig.getConfig('joinRoom')));
 
     //设置上传图片的大小
     app.use(bodyParser({

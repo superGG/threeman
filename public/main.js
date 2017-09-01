@@ -87,7 +87,7 @@
         '<span class="money">下注：积分</span>';
 
         userStr = userStr + '<div class="player '+ siteNote[i]+ ' user' + userList[p].userId +'"><div class="userInfo">'
-        + '<div class="avatar"><img src="'+ baseUrl + userList[p].image +'" alt=""></div>'
+        + '<div class="avatar" style="background-color: ' + randomColor()+';"><span>'+ userList[p].name + '</span></div>'
         + '<span class="nick">'+ userList[p].name +'</span><span class="count">积分: ' + userList[p].interal +'</span></div>'
         + '<div class="pokerBg">' + renderPoker(userList[p].poker) + '</div>' +
         '<span class="ready">' + readyStr +'</span> ' + betStr +'</div>'
@@ -104,8 +104,7 @@
    * @param myInfo
    */
   var renderMyinfo = function(myInfo) {
-
-    $(".my .userInfo .avatar img").attr("src", baseUrl + myInfo.image);
+    $(".my .userInfo .avatar").css('background-color', randomColor()).find('span').html(myInfo.name);
     $(".my .userInfo .nick").html(myInfo.name);
     $(".my .userInfo .count").html(myInfo.interal);
     $(".my .poker").html(renderPoker(myInfo.poker));
@@ -184,6 +183,8 @@
       renderOption(6)
     }
   });
+
+
 
   /**
    * 渲染投注选项
@@ -328,6 +329,17 @@
     }
   });
 
+  
+  socket.on("removeRoom", function(data) {
+    
+    weui.topTips(data.message, {
+      duration: 3000,
+      callback: function() {
+        location.href = '/userInfo'
+      }
+    })
+  })
+    
   socket.on("roomInfo", function(data) {
     if(errorServer(data)) {
       return false

@@ -1,7 +1,7 @@
-var baseUrl = "http://120.77.246.32:1234";
+var baseUrl = "http://192.168.0.118:1234";
 var serverUrl = baseUrl + "/api/";
-var socketUrl = "http://120.77.246.32:1234";
-var testUrl = "http://120.77.246.32:1234";
+var socketUrl = "http://192.168.0.118:1234";
+var testUrl = "http://192.168.0.118:1234";
 // var testUrl = "http://120.77.246.32:1234";
 
 var checkInputVal = function(vals) {
@@ -115,4 +115,16 @@ var inOtherRoom = function(error) {
   }
 
   return false;
+}
+
+var randomColor = function() {
+  var colorArr = ["#EACF02","#6C890B","#ABC327","#DFB5B7","#7F1874","#DB9019","#7A023C"];
+  return colorArr[parseInt(Math.random()*7)];
+}
+
+var renderAvatar = function(name) {
+  var name = name || localStorage.getItem('name');
+  var backgroundColor = randomColor();
+
+  $('.avatar').css('background-color', backgroundColor).find("span").html(name);
 }

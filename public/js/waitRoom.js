@@ -4,6 +4,7 @@ $(function() {
   var userList = {}, roomId = '', option = "";
   var userId = localStorage.getItem('userId');
   var Msgloading = "";
+  var role = localStorage.getItem('role');
 
   var closeOtherRoom = function(role) {
     weui.confirm('您已加入其他房间，是否退出其他房间？', {
@@ -41,12 +42,12 @@ $(function() {
 
   for(var i = 0, len = paramArr.length; i < len; i++) {
 
-    if(paramArr[i].split("=")[0] === "option"){
-      option = paramArr[i].split("=")[1];
-    }else if(paramArr[i].split("=")[0] === "roomId") {
+    if(paramArr[i].split("=")[0] === "roomId"){
       roomId = paramArr[i].split("=")[1];
     }
   }
+
+  $(".room__id").html(roomId);
 
   var updateSite = function() {
 
@@ -54,10 +55,11 @@ $(function() {
 
     var i = 0;
     for(var p in userList) {
-
-      siteDom.eq(i).css("background-image", "url(" + baseUrl + userList[p].image + ")")
+      siteDom.eq(i).html('<div class="avatar" style="background-color:'+ randomColor() +';"><span>'+ userList[p].name +'</span></div>');
       i ++;
     }
+
+    $('.weui-uploader__info').html(i + '/6')
 
     i = 0;
   };
@@ -69,31 +71,20 @@ $(function() {
     interal: localStorage.getItem("interal")
   };
 
-  socket.on('createRoom', function(data) {
+  socket.emit('roomInfo', {
+    roomId: roomId,
+    user: user
+  })
 
-    loading.hide();
-    var role = localStorage.getItem('role');
+  socket.on('roomInfo', function(data) {
 
     if(errorServer(data)) {
-      if(inOtherRoom(data)) {
-        var _roomId = localStorage.getItem('roomId');
-        socket.emit("roomInfo", {
-          roomId: _roomId,
-          user: user
-        });
-        closeOtherRoom(role)
-      }
-      return false
+      return;
     }
 
     userList = merge({}, userList, data.room.userList);
-    roomId = data.room.roomId;
-    updateSite();
-    localStorage.setItem('roomId', roomId);
-    localStorage.setItem('role', 1);
-    $("#room_code").val(testUrl + "/waitRoom?option=join&roomId=" + roomId)
-
-  });
+    updateSite()
+  })
 
   socket.on("leaveRoom", function(data) {
 
@@ -116,7 +107,7 @@ $(function() {
 
   socket.on("joinRoom", function(data) {
 
-    loading.hide();
+    if(loading)loading.hide();
     var role = localStorage.getItem('role');
 
     if(errorServer(data)) {
@@ -139,6 +130,16 @@ $(function() {
     updateSite();
 
   });
+
+  socket.on("removeRoom", function(data) {
+
+    weui.topTips(data.message, {
+      duration: 3000,
+      callback: function() {
+        location.href = '/userInfo'
+      }
+    })
+  })
 
   socket.on("closeRoom", function(data) {
 
@@ -179,28 +180,35 @@ $(function() {
     }, 3000)
   });
 
-  if(option === "create") {
+  // if(option === "create") {
 
-    var loading = weui.loading("loading");
-    socket.emit('createRoom', { user: user });
+  //   var loading = weui.loading("loading");
+  //   socket.emit('createRoom', { user: user });
 
+  //   $("#cancel").css("display", "none");
+  // }
+
+  if(role == '1') {
     $("#cancel").css("display", "none");
-  }
-
-  if(option === "join") {
-
-    var loading = weui.loading("请求中");
-
-    $("#room_code").val(location.href)
-
-    socket.emit("joinRoom", {
-      user: user,
-      roomId: roomId
-    })
-
+  }else {
     $("#close").css("display", "none");
     $("#start").css("display", "none");
   }
+
+  // if(option === "join") {
+
+  //   var loading = weui.loading("请求中");
+
+  //   $("#room_code").val(location.href)
+
+  //   socket.emit("joinRoom", {
+  //     user: user,
+  //     roomId: roomId
+  //   })
+
+  //   $("#close").css("display", "none");
+  //   $("#start").css("display", "none");
+  // }
 
   $("#cancel").click(function() {
 

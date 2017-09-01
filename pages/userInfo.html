@@ -10,6 +10,7 @@
     <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.js"></script>
     <script src="js/tool.js"></script>
     <script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.2/weui.min.js"></script>
+    <script src="js/socket.io.js"></script>
   <style>
     .user-avatar{
         display: flex;
@@ -21,7 +22,11 @@
     .user-avatar .avatar{
         width: 100px;
         height: 100px;
-        background-size: cover;
+        line-height: 100px;
+        font-size: 36px;
+        text-align: center;
+        color: #fff;
+        overflow: hidden;
     }
 
     .user-avatar .count {
@@ -35,7 +40,9 @@
       <div class="page__hd">
         <!-- <h1 class="page__title">放头像</h1> -->
         <div class="user-avatar">
-            <div class="avatar"></div>
+            <div class="avatar">
+              <span>name</span>
+            </div>
             <div class="user-name">用户名</div>
             <div class="count">积分：<span></span></div>
         </div>
@@ -49,6 +56,14 @@
                 </div>
                 <div class="weui-cell__ft">创建房间</div>
             </a>
+        </div>
+        <div class="weui-cells">
+          <a class="weui-cell" id="join" href="javascript:;">
+              <div class="weui-cell__bd">
+                  <p>加入房间</p>
+              </div>
+              <div class="weui-cell__ft">加入房间</div>
+          </a>
         </div>
       </div>
     </div>    

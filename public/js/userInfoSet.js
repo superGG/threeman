@@ -1,20 +1,20 @@
 $(function() {
 
-  var avatar = localStorage.getItem('avatar');
-  if(avatar) {
+  var setFlag = localStorage.getItem('setFlag');
+  if(setFlag) {
     location.href = '/userInfo'
   }
 
-  var checkAvatar = function(val) {
+  // var checkAvatar = function(val) {
 
-    if(!val) {
+  //   if(!val) {
 
-      weui.topTips("请先上传头像");
-      return false
-    }
+  //     weui.topTips("请先上传头像");
+  //     return false
+  //   }
 
-    return true
-  }
+  //   return true
+  // }
 
   var userAvatarUrl = '';
   var setErr = function() {
@@ -23,49 +23,47 @@ $(function() {
     $(".weui-uploader__file").remove()
   };
 
-  $("#uploaderInput").change(function() {
+  // $("#uploaderInput").change(function() {
 
-    var file = $("#uploaderInput")[0].files[0];
-    var formData = new FormData();
-    formData.append("userAvatar", file);
+  //   var file = $("#uploaderInput")[0].files[0];
+  //   var formData = new FormData();
+  //   formData.append("userAvatar", file);
 
-    $("#uploaderFiles").append('<li class="weui-uploader__file weui-uploader__file_status"> <div class="weui-uploader__file-content">0%</div> </li>')
-    $(".weui-uploader__input-box").css("display", "none");
+  //   $("#uploaderFiles").append('<li class="weui-uploader__file weui-uploader__file_status"> <div class="weui-uploader__file-content">0%</div> </li>')
+  //   $(".weui-uploader__input-box").css("display", "none");
 
-    $.ajax({
-      type: 'POST',
-      data: formData,
-      url: serverUrl + "upload",
-      processData : false,
-      contentType:false,
-      xhr:xhrOnProgress(function(e){
-        var percent=e.loaded / e.total;//计算百分比
+  //   $.ajax({
+  //     type: 'POST',
+  //     data: formData,
+  //     url: serverUrl + "upload",
+  //     processData : false,
+  //     contentType:false,
+  //     xhr:xhrOnProgress(function(e){
+  //       var percent=e.loaded / e.total;//计算百分比
 
-        $(".weui-uploader__file-content").html(parseInt(percent * 100) + "%")
-      })
+  //       $(".weui-uploader__file-content").html(parseInt(percent * 100) + "%")
+  //     })
 
-    }).success(function(data) {
+  //   }).success(function(data) {
 
-      if(errorServer(data)) {
-        setErr()
-        return false
-      }
+  //     if(errorServer(data)) {
+  //       setErr()
+  //       return false
+  //     }
 
-      var url = data.files.userAvatar;
-      userAvatarUrl = url;
-      $('.weui-uploader__file').removeClass("weui-uploader__file_status").css("background-image", "url("+ baseUrl + url +")");
-      $('.weui-uploader__file-content').css("display", "none");
+  //     var url = data.files.userAvatar;
+  //     userAvatarUrl = url;
+  //     $('.weui-uploader__file').removeClass("weui-uploader__file_status").css("background-image", "url("+ baseUrl + url +")");
+  //     $('.weui-uploader__file-content').css("display", "none");
 
-    })
-  });
+  //   })
+  // });
 
   $("#update").click(function() {
 
     var nick = $("#nick").val();
     var userId = localStorage.getItem("userId");
     if(
-      checkAvatar(userAvatarUrl)
-      &&
         checkRequired(nick, "昵称")
     ) {
 
@@ -86,6 +84,8 @@ $(function() {
           setErr()
           return false
         }
+
+        localStorage.setItem('setFlag', true);
 
         weui.toast("更新成功！", {
           duration: 3000,
