@@ -107,7 +107,7 @@ $(function() {
 
   socket.on("joinRoom", function(data) {
 
-    if(loading)loading.hide();
+    if(typeof loading === 'function')loading.hide();
     var role = localStorage.getItem('role');
 
     if(errorServer(data)) {
@@ -149,9 +149,9 @@ $(function() {
 
     console.log('close')
     
-    if(Msgloading)Msgloading.hide();
+    if(typeof Msgloading === 'function')Msgloading.hide();
     weui.topTips(data.message, {
-      duration: 3000,
+      duration: 1000,
       callback: function(){ location.href = '/userInfo' }
     })
   });
@@ -177,7 +177,7 @@ $(function() {
 
     setTimeout(function() {
       window.location.href = '/main?roomId=' + roomId + "&role=" + role;
-    }, 3000)
+    }, 1000)
   });
 
   // if(option === "create") {
