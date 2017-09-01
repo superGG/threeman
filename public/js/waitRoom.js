@@ -123,9 +123,6 @@ $(function() {
       return false
     }
 
-    localStorage.setItem('roomId', roomId);
-    localStorage.setItem('role', 2);
-
     userList = data.room.userList;
     updateSite();
 
