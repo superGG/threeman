@@ -40,7 +40,7 @@ exports.start = async function (sockets, yuanData) {
                 //移除空闲房间
                 let time = new Date();
                 Object.keys(roomList).forEach(_roomId =>{
-                    if ((time.getTime() - roomList[_roomId].lastOperationTime.getTime()>(1000 * 60 * 1))) {
+                    if ((time.getTime() - roomList[_roomId].lastOperationTime.getTime()>(1000 * 60 * 10))) {
                         delete roomList[_roomId];
                         sockets.to(_roomId).emit('removeRoom', {result: false, message: "超过10分钟没有操作，关闭房间",code:321});
                         console.log(`${_roomId}超过10分钟没有操作，关闭房间`)
