@@ -88,7 +88,7 @@ $(function() {
         localStorage.setItem('setFlag', true);
 
         weui.toast("更新成功！", {
-          duration: 3000,
+          duration: 1000,
           callback: function() {
             window.location.href = '/userInfo'
           }
