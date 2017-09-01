@@ -355,7 +355,7 @@ exports.start = async function (sockets, yuanData) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             if (roomList[data.roomId] != null) {
-                roomList[roomId].lastOperationTime = new Date();
+                roomList[data.roomId].lastOperationTime = new Date();
                 initGame(data.roomId);
                 sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
             } else {
