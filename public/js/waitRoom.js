@@ -171,7 +171,7 @@ $(function() {
       return false
     }
 
-    var role = option === "create" ? 1 : 2;
+    var role = localStorage.getItem("role");
 
     weui.alert("游戏将在10s后开始，请设置手机为横屏模式。");
 
