@@ -40,7 +40,7 @@ exports.start = async function (sockets, yuanData) {
                 //移除空闲房间
                 let time = new Date();
                 Object.keys(roomList).forEach(_roomId =>{
-                    if ((time.getTime() - roomList[_roomId].lastOperationTime.getTime()>(1000 * 60 * 1))) {
+                    if ((time.getTime() - roomList[_roomId].lastOperationTime.getTime()>(1000 * 60 * 10))) {
                         delete roomList[_roomId];
                         sockets.to(_roomId).emit('removeRoom', {result: false, message: "超过10分钟没有操作，关闭房间",code:321});
                         console.log(`${_roomId}超过10分钟没有操作，关闭房间`)
@@ -355,7 +355,7 @@ exports.start = async function (sockets, yuanData) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             if (roomList[data.roomId] != null) {
-                roomList[roomId].lastOperationTime = new Date();
+                roomList[data.roomId].lastOperationTime = new Date();
                 initGame(data.roomId);
                 sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
             } else {
