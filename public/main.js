@@ -364,7 +364,7 @@
 
     var readyUserId = data.readyUser.userId;
 
-    if(userId === readyUserId) {
+    if(userId == readyUserId) {
 
       renderOption(2)
     }else {
