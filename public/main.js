@@ -19,17 +19,6 @@
   var user = ""
   var start = true;
 
-  var tansferNumToPic = function(numArr) {
-
-    return numArr.map(function(item, index){
-
-      var num = Math.ceil(item / 4);
-      var afr = item % 4 === 0 ? 3 : item % 4 - 1;
-
-      return num + "_" + afr + ".png"
-    })
-  };
-
   /**
    * 渲染用户扑克信息
    * @param poker
@@ -203,6 +192,24 @@
      return optionStr;
    };
 
+  /**
+   * 设置最低筹码
+   * @returns {string}
+   */
+  var renderMinChipOption = function() {
+
+    var multiple = [50, 100, 200, 500];
+
+    var optionStr = "<h3>请选择你要设置的最低筹码</h3>";
+
+    multiple.forEach(function(item) {
+
+      optionStr = optionStr + '<li val="'+ item +'" type="chip">' + item + '</li>';
+    });
+
+    return optionStr;
+  };
+
   var renderResult = function(userArray) {
 
     var str = '';
@@ -278,7 +285,7 @@
     switch(optionFlag) {
       case 1:
         $('.option').css('display', 'block');
-        var optionStr = '<h3>准备好了，就可以开始游戏啦！</h3><li id="ready">准备</li><li id="' + leaveOption +'">离开</li>';
+        var optionStr = '<h3>准备好了，就可以开始游戏啦！</h3><ul><li id="ready">准备</li><li id="' + leaveOption +'">离开</li></ul>';
         $('.option ul').html(optionStr);
         return;
       case 2:
@@ -292,7 +299,7 @@
         return;
       case 4:
         $('.option').css('display', 'block');
-        $('.option ul').html('<h3>是否开始下一轮</h3><li id="nextRound">开始</li><li id="closeGame">关闭游戏</li>');
+        $('.option ul').html('<h3>是否开始下一轮</h3><ul><li id="nextRound">开始</li><li id="closeGame">关闭游戏</li></ul>');
         return;
       case 5:
         $(".poker__out").addClass('active');
@@ -303,7 +310,7 @@
         return;
       case 6:
         $('.option').css('display', 'block');
-        $('.option ul').html('<h3>是否开始下一轮</h3><li id="waitRound">等待下一轮</li><li id="leaveGame">离开</li>');
+        $('.option ul').html('<h3>是否开始下一轮</h3><ul><li id="waitRound">等待下一轮</li><li id="leaveGame">离开</li></ul>');
         return;
       default:
         return;
@@ -384,7 +391,7 @@
     var chip = data.money;
 
     if(user.userId === betUser.userId) {
-      $(".chip .money").html(chip + '积分')
+      $(".chip .money").html(chip + '积分');
       $(".my .chip").css("display", "block");
       renderOption();
     }else {
@@ -401,11 +408,11 @@
     }
 
     var loading = weui.loading("发牌中，请稍等...");
-    renderUserInfo(data.room)
+    renderUserInfo(data.room);
 
     setTimeout(function() {
 
-      loading.hide()
+      loading.hide();
       setTimeout(function() {
         $(".poker__out").addClass('active');
       }, 3000);

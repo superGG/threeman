@@ -6,34 +6,6 @@ $(function() {
   var Msgloading = "";
   var role = localStorage.getItem('role');
 
-  var closeOtherRoom = function(role) {
-    weui.confirm('您已加入其他房间，是否退出其他房间？', {
-      buttons: [{
-          label: '取消',
-          type: 'default',
-          onClick: function(){ location.href = '/userInfo' }
-      }, {
-          label: '是',
-          type: 'primary',
-          onClick: function(){ 
-
-            if(role == 1) {
-              socket.emit('closeRoom', {
-                roomId: localStorage.getItem('roomId'),
-                user: user
-              })
-            }else {
-              socket.emit('leaveRoom', {
-                roomId: localStorage.getItem('roomId'),
-                user: user
-              })
-            }
-            
-           }
-      }]
-  });
-  }
-
   if(!userId) {
     weui.alert('请先登录！', function() {
       window.location.href = '/'
@@ -74,7 +46,7 @@ $(function() {
   socket.emit('roomInfo', {
     roomId: roomId,
     user: user
-  })
+  });
 
   socket.on('roomInfo', function(data) {
 
@@ -84,7 +56,7 @@ $(function() {
 
     userList = merge({}, userList, data.room.userList);
     updateSite()
-  })
+  });
 
   socket.on("leaveRoom", function(data) {
 
@@ -111,15 +83,6 @@ $(function() {
     var role = localStorage.getItem('role');
 
     if(errorServer(data)) {
-      if(inOtherRoom(data)) {
-        
-        var _roomId = localStorage.getItem('roomId');
-        socket.emit("roomInfo", {
-          roomId: _roomId,
-          user: user
-        });
-        closeOtherRoom(role)
-      }
       return false
     }
 
@@ -177,13 +140,6 @@ $(function() {
     }, 1000)
   });
 
-  // if(option === "create") {
-
-  //   var loading = weui.loading("loading");
-  //   socket.emit('createRoom', { user: user });
-
-  //   $("#cancel").css("display", "none");
-  // }
 
   if(role == '1') {
     $("#cancel").css("display", "none");
@@ -192,20 +148,6 @@ $(function() {
     $("#start").css("display", "none");
   }
 
-  // if(option === "join") {
-
-  //   var loading = weui.loading("请求中");
-
-  //   $("#room_code").val(location.href)
-
-  //   socket.emit("joinRoom", {
-  //     user: user,
-  //     roomId: roomId
-  //   })
-
-  //   $("#close").css("display", "none");
-  //   $("#start").css("display", "none");
-  // }
 
   $("#cancel").click(function() {
 
@@ -223,13 +165,6 @@ $(function() {
       roomId: roomId
     })
   })
-
-  $(".copy").click(function() {
-
-    var urlInput = $('#room_code').get(0);
-    urlInput.select(); // 选择对象
-    document.execCommand("Copy");
-  });
 
   $(".weui-select").change(function(e) {
     var value = e.target.value;
