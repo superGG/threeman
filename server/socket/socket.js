@@ -31,18 +31,18 @@ exports.start = async function (sockets, yuanData) {
             try {
                 var user = data.user
                 let session = await yuanData.createSession();
-                let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`, {userId: user.userId})
                 user = db_user.getPlain();
-                if (user!=null && checkUser(user)) {
-                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间",code:110});
+                if (user != null && checkUser(user)) {
+                    socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间", code: 110});
                     return;
                 }
                 //移除空闲房间
                 let time = new Date();
-                Object.keys(roomList).forEach(_roomId =>{
-                    if ((time.getTime() - roomList[_roomId].lastOperationTime.getTime()>(1000 * 60 * 10))) {
+                Object.keys(roomList).forEach(_roomId => {
+                    if ((time.getTime() - roomList[_roomId].lastOperationTime.getTime() > (1000 * 60 * 10))) {
                         delete roomList[_roomId];
-                        sockets.to(_roomId).emit('removeRoom', {result: false, message: "超过10分钟没有操作，关闭房间",code:321});
+                        sockets.to(_roomId).emit('removeRoom', {result: false, message: "超过10分钟没有操作，关闭房间", code: 321});
                         console.log(`${_roomId}超过10分钟没有操作，关闭房间`)
                     }
                 })
@@ -51,7 +51,7 @@ exports.start = async function (sockets, yuanData) {
                 room.userList = {};
                 room.roomId = createRoomId(); //房间id
                 if (room.roomId < 0) {
-                    socket.emit('joinRoom', {result: false, message: "房间数已满",code:123});
+                    socket.emit('joinRoom', {result: false, message: "房间数已满", code: 123});
                     return;
                 }
                 room.lastOperationTime = new Date();
@@ -82,23 +82,23 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].lastOperationTime = new Date();
 
                     let session = await yuanData.createSession();
-                    let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`,{userId:user.userId})
+                    let db_user = await session.query(`query {user(userId=$userId):{userId,name,interal,image}}`, {userId: user.userId})
                     user = db_user.getPlain();
-                    if (user!=null && checkUser(user)) {
-                        socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间",code:110});
+                    if (user != null && checkUser(user)) {
+                        socket.emit('joinRoom', {result: false, message: "用户已经加入别的房间", code: 110});
                         return;
                     }
 
                     if (roomList[roomId].start) {
-                        socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏",code:111});
+                        socket.emit('joinRoom', {result: false, message: "该房间已经开始游戏", code: 111});
                         return;
                     }
                     if (user.interal < roomList[roomId].minChip) {
-                        socket.emit('joinRoom', {result: false, message: "该用户的积分不够",code:112});
+                        socket.emit('joinRoom', {result: false, message: "该用户的积分不够", code: 112});
                         return;
                     }
                     if (Object.keys(roomList[roomId].userList).length >= 6) {
-                        socket.emit('joinRoom', {result: false, message: "房间已满人",code:113});
+                        socket.emit('joinRoom', {result: false, message: "房间已满人", code: 113});
                         return;
                     }
                     user.ready = false;//玩家准备状态
@@ -108,7 +108,7 @@ exports.start = async function (sockets, yuanData) {
                     console.log(user.name + "加入" + roomId + "房间")
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
                 } else {
-                    socket.emit('joinRoom', {result: false, message:"该房间已关闭"});
+                    socket.emit('joinRoom', {result: false, message: "该房间已关闭"});
                 }
             } catch (e) {
                 console.log("Join room has error")
@@ -133,7 +133,7 @@ exports.start = async function (sockets, yuanData) {
                     socket.leave(roomId)
                     console.log(user.name + "离开了房间")
                 } else {
-                    socket.emit('leaveRoom', {result: false, message:"该房间已关闭"});
+                    socket.emit('leaveRoom', {result: false, message: "该房间已关闭"});
                 }
             } catch (e) {
                 console.log("Leave room has error")
@@ -154,7 +154,7 @@ exports.start = async function (sockets, yuanData) {
                     socket.leave(roomId)
                     console.log(roomId + "房间关闭")
                 } else {
-                    socket.emit('closeRoom', {result: false, message:"该房间已关闭"});
+                    socket.emit('closeRoom', {result: false, message: "该房间已关闭"});
                 }
             } catch (e) {
                 console.log("Close room has error")
@@ -174,7 +174,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('startGame', {result: true, message: "游戏开始，上桌...."});
                     console.log(`${roomId}房间的玩家上桌，准备开始游戏`)
                 } else {
-                    socket.emit('startGame', {result: false, message:"该房间已关闭"});
+                    socket.emit('startGame', {result: false, message: "该房间已关闭"});
                 }
             } catch (e) {
                 console.log(e)
@@ -193,10 +193,10 @@ exports.start = async function (sockets, yuanData) {
                         socket.join(roomId);
                         socket.emit('roomInfo', {result: true, room: roomList[roomId]});
                     } else {
-                        socket.emit('roomInfo', {result: false, message:"用户不在该房间"});
+                        socket.emit('roomInfo', {result: false, message: "用户不在该房间"});
                     }
                 } else {
-                    socket.emit('roomInfo', {result: false, message:"该房间已关闭"});
+                    socket.emit('roomInfo', {result: false, message: "该房间已关闭"});
                 }
             } catch (e) {
                 console.log(e)
@@ -238,11 +238,40 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].userList[user.userId].ready = true;
                     console.log(roomId + "房间的" + user.name + "准备游戏")
 
-                    if (isAllReady(roomList[roomId])) {  //判断是否可以下注
+                    let ready_status = ReadyStatus(roomList[roomId]);
+                    if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
                         roomList[roomId].allReady = true;
                         console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
+                    }
+                    if (ready_status.noReadyNumber == 1) {  //剩下一个人
+                        let time = 16;
+                        let interval = setInterval(function () { //每秒
+                            time -= 1;
+                            sockets.to(roomId).emit('readyGame', {
+                                room: roomList[roomId],
+                                allReady: false,
+                                noReadyUser: ready_status.noReadyUser,
+                                time
+                            });
+                            console.log(`${roomId}房间倒计时开始，${time}`)
+                            if (time <= 0) {
+                                clearInterval(interval)
+                                if (Object.keys(roomList[roomId].userList).length <= 2) {
+                                    delete roomList[roomId];
+                                    sockets.to(roomId).emit('closeRoom', {result: true, message: "房间关闭"})
+                                    console.log(`${roomId}房间，有人不准备，人数不够，房间关闭`)
+                                } else {
+                                    sockets.to(roomId).emit('leaveRoom', {
+                                        result: true,
+                                        leaveUser: ready_status.noReadyUser
+                                    });
+                                    delete roomList[roomId].userList[ready_status.noReadyUser.userId]
+                                    console.log(ready_status.noReadyUser.name + "离开了房间")
+                                }
+                            }
+                        }, 1000)
                     }
                     sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
                 } else {
@@ -254,24 +283,6 @@ exports.start = async function (sockets, yuanData) {
             }
         })
 
-        /**
-         * 取消准备游戏
-         */
-        socket.on('cancleReady', function (data) {
-            var {roomId, user} = data;
-            if (roomList[roomId] != null) {
-                roomList[roomId].lastOperationTime = new Date();
-                if (!roomList[roomId].userList.hasOwnProperty(user.userId)) {
-                    socket.emit('cancleReady', {result: false, message: "该用户没有加入房间"});
-                    return;
-                }
-                roomList[roomId].userList[user.userId].ready = false
-                console.log(roomId + "房间的" + user.name + "取消准备")
-                sockets.to(roomId).emit('cancleReady', {result: true, cancleReadyUser: user});
-            } else {
-                socket.emit('cancleReady', {result: false, message: '没有该房间'})
-            }
-        })
 
         /**
          * 下注
@@ -316,13 +327,13 @@ exports.start = async function (sockets, yuanData) {
                                         interal: (Number(user.interal) + user.result.count)
                                     })
                                 ));
-                                await Promise.all(Object.keys(roomList[roomId].userList).map(async userId=>{
-                                        let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`,{userId:Number(userId)})
+                                await Promise.all(Object.keys(roomList[roomId].userList).map(async userId => {
+                                        let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`, {userId: Number(userId)})
                                         console.log(`${temUser.name}的最新积分${temUser.interal}`)
                                         roomList[roomId].userList[userId].interal = temUser.interal;
                                     })
                                 );
-                                
+
                                 //添加积分记录
                                 console.log("-------------------add record-------")
                                 await Promise.all(userArray.map(user =>
@@ -331,7 +342,7 @@ exports.start = async function (sockets, yuanData) {
                                         user: {userId: user.userId}
                                     })
                                 ));
-                                sockets.to(roomId).emit('compare', {userArray,room:roomList[roomId]});
+                                sockets.to(roomId).emit('compare', {userArray, room: roomList[roomId]});
                                 console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
                             }, 15000);
                         } catch (err) {
@@ -430,9 +441,9 @@ function createRoomId() {
     var result = true;
     var roomId;
     var length = 0
-    while(result && length < 90) {
-        roomId = Math.floor(Math.random()*89) + 10;
-        result = roomList.hasOwnProperty(roomId)? true : false
+    while (result && length < 90) {
+        roomId = Math.floor(Math.random() * 89) + 10;
+        result = roomList.hasOwnProperty(roomId) ? true : false
         length++;
     }
 
@@ -443,13 +454,17 @@ function createRoomId() {
  * 判断是否可以开始下注（全部准备）
  * @param room
  */
-function isAllReady(room) {
-    var users = room.userList;
+function ReadyStatus(room) {
+    let ready_status = {};
+    let users = room.userList;
+    ready_status.noReadyNumber = Object.keys(users).length;
+    var user;
     for (var userId in users) {
-        var user = users[userId];
-        if (!user.ready) return false; //只要有一个没有准备，都不能开始
+        user = users[userId];
+        if (user.ready) ready_status.noReadyNumber--;
+        if (!user.ready) ready_status.noReadyUser = user;
     }
-    return true;
+    return ready_status;
 }
 
 /**
