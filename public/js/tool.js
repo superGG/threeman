@@ -29,10 +29,15 @@ var checkVal = function(val, rules) {
   }
 };
 
-var errorServer = function (data) {
+var errorServer = function (data, cb) {
 
   if(data.error || data.result === false) {
-    weui.topTips(data.message);
+    weui.topTips(data.message, {
+      duration: 2000,
+      callback: function() {
+        typeof cb === 'function' ? cb() : null
+      }
+    });
     return true;
   }
 

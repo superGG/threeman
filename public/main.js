@@ -285,7 +285,7 @@
     switch(optionFlag) {
       case 1:
         $('.option').css('display', 'block');
-        var optionStr = '<h3>准备好了，就可以开始游戏啦！</h3><ul><li id="ready">准备</li><li id="' + leaveOption +'">离开</li></ul>';
+        var optionStr = '<h3>准备好了，就可以开始游戏啦！</h3><li id="ready">准备</li><li id="' + leaveOption +'">离开</li>';
         $('.option ul').html(optionStr);
         return;
       case 2:
@@ -299,7 +299,7 @@
         return;
       case 4:
         $('.option').css('display', 'block');
-        $('.option ul').html('<h3>是否开始下一轮</h3><ul><li id="nextRound">开始</li><li id="closeGame">关闭游戏</li></ul>');
+        $('.option ul').html('<h3>是否开始下一轮</h3><li id="nextRound">开始</li><li id="closeGame">关闭游戏</li>');
         return;
       case 5:
         $(".poker__out").addClass('active');
@@ -310,7 +310,7 @@
         return;
       case 6:
         $('.option').css('display', 'block');
-        $('.option ul').html('<h3>是否开始下一轮</h3><ul><li id="waitRound">等待下一轮</li><li id="leaveGame">离开</li></ul>');
+        $('.option ul').html('<h3>是否开始下一轮</h3><li id="waitRound">等待下一轮</li><li id="leaveGame">离开</li>');
         return;
       default:
         return;
@@ -340,7 +340,7 @@
   socket.on("removeRoom", function(data) {
     
     weui.topTips(data.message, {
-      duration: 3000,
+      duration: 2000,
       callback: function() {
         location.href = '/userInfo'
       }
@@ -348,7 +348,9 @@
   })
     
   socket.on("roomInfo", function(data) {
-    if(errorServer(data)) {
+    if(errorServer(data), function() {
+        window.location.href = '/userInfo';
+      }) {
       return false
     }
 

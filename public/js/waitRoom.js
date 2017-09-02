@@ -146,6 +146,7 @@ $(function() {
   }else {
     $("#close").css("display", "none");
     $("#start").css("display", "none");
+    $(".min__chip").css('display', 'none');
   }
 
 
