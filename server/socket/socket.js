@@ -237,17 +237,18 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId].ready = true;
                     console.log(roomId + "房间的" + user.name + "准备游戏")
-
+                    let interval;
                     let ready_status = ReadyStatus(roomList[roomId]);
                     if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
                         roomList[roomId].allReady = true;
                         console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
+                        if (interval != null) clearInterval(interval) //清楚倒计时
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
                     }
                     if (ready_status.noReadyNumber == 1) {  //剩下一个人
                         let time = 16;
-                        let interval = setInterval(function () { //每秒
+                        interval = setInterval(function () { //每秒
                             time -= 1;
                             sockets.to(roomId).emit('readyGame', {
                                 room: roomList[roomId],
@@ -256,7 +257,7 @@ exports.start = async function (sockets, yuanData) {
                                 time
                             });
                             console.log(`${roomId}房间倒计时开始，${time}`)
-                            if (time <= 0) {
+                            if (time <= 0) { //到时关闭
                                 clearInterval(interval)
                                 if (Object.keys(roomList[roomId].userList).length <= 2) {
                                     delete roomList[roomId];
