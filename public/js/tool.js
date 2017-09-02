@@ -1,4 +1,4 @@
-var baseUrl = "http://120.77.246.32:1234";
+var baseUrl = "http://localhost:1234";
 var serverUrl = baseUrl + "/api/";
 var socketUrl = baseUrl;
 var testUrl = baseUrl;
