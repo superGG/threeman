@@ -128,7 +128,7 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('leaveRoom', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
-                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: user});
+                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: [user.userId]});
                     delete roomList[roomId].userList[user.userId]
                     socket.leave(roomId)
                     console.log(user.name + "离开了房间")
@@ -237,23 +237,21 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId].ready = true;
                     console.log(roomId + "房间的" + user.name + "准备游戏")
-                    let interval;
                     let ready_status = ReadyStatus(roomList[roomId]);
                     if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
                         roomList[roomId].allReady = true;
                         console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
-                        if (interval != null) clearInterval(interval) //清楚倒计时
+                        if (roomList[roomId].hasOwnProperty(interval)) clearInterval(interval) //清楚倒计时
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
                     }
-                    if (ready_status.noReadyNumber == 1) {  //剩下一个人
+                    if (!roomList[roomId].hasOwnProperty(interval)) { //第一个人准备的时候触发
                         let time = 16;
-                        interval = setInterval(function () { //每秒
+                        roomList[roomId].interval = setInterval(function () { //每秒
                             time -= 1;
                             sockets.to(roomId).emit('readyGame', {
                                 room: roomList[roomId],
                                 allReady: false,
-                                noReadyUser: ready_status.noReadyUser,
                                 time
                             });
                             console.log(`${roomId}房间倒计时开始，${time}`)
@@ -266,10 +264,13 @@ exports.start = async function (sockets, yuanData) {
                                 } else {
                                     sockets.to(roomId).emit('leaveRoom', {
                                         result: true,
-                                        leaveUser: ready_status.noReadyUser
+                                        leaveUser: ready_status.noReadyUserList
                                     });
-                                    delete roomList[roomId].userList[ready_status.noReadyUser.userId]
-                                    console.log(ready_status.noReadyUser.name + "离开了房间")
+                                    ready_status.noReadyUserList.forEach(userId =>{
+                                        delete roomList[roomId].userList[userId]
+                                        console.log(`${roomId}房间的${roomList[roomId].userList[userId].name}没有准备，自动离开房间`)
+                                    })
+
                                 }
                             }
                         }, 1000)
@@ -310,6 +311,8 @@ exports.start = async function (sockets, yuanData) {
 
                     console.log(`${roomId}房间的${user.name}下注${money}元`)
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
+
+
                     if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
                         //发牌
                         threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
@@ -374,6 +377,8 @@ exports.start = async function (sockets, yuanData) {
                 socket.emit('endGame', {result: false, message: '没有该房间'})
             }
         })
+
+
 
         // /**
         //  * 玩家退出桌面
@@ -459,11 +464,15 @@ function ReadyStatus(room) {
     let ready_status = {};
     let users = room.userList;
     ready_status.noReadyNumber = Object.keys(users).length;
+    ready_status.noReadyUserList = [];
     var user;
     for (var userId in users) {
         user = users[userId];
-        if (user.ready) ready_status.noReadyNumber--;
-        if (!user.ready) ready_status.noReadyUser = user;
+        if (user.ready) {
+            ready_status.noReadyNumber--;
+        } else {
+            ready_status.noReadyUserList.push(userId);
+        }
     }
     return ready_status;
 }
