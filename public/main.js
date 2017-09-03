@@ -125,6 +125,21 @@
 
 
      if(id === 'ready') {
+       var count = $(".my .userInfo .info .count").html();
+
+       if(count < chip) {
+
+         weui.alert('您积分不足，无法进行本轮游戏', {
+           buttons: [{
+             label: '正确',
+             type: 'primary',
+             onClick: function(){
+
+               socket.emit('leaveRoom')
+             }
+           }]
+         });
+       }
        socket.emit("readyGame", {
          roomId: roomId,
          user: user
@@ -348,9 +363,9 @@
   })
     
   socket.on("roomInfo", function(data) {
-    if(errorServer(data), function() {
+    if(errorServer(data, function() {
         window.location.href = '/userInfo';
-      }) {
+      })) {
       return false
     }
 
@@ -371,14 +386,25 @@
       return
     }
 
-    var readyUserId = data.readyUser.userId;
+    if(data.readyUser) {
 
-    if(userId == readyUserId) {
+      var readyUserId = data.readyUser.userId;
 
-      renderOption(2)
+      if(userId == readyUserId) {
+
+        renderOption(2)
+      }else {
+
+        $('.user'+readyUserId+' .ready').html("准备中").css('color','#ffb422')
+      }
+
     }else {
 
-      $('.user'+readyUserId+' .ready').html("准备中").css('color','#ffb422')
+      var noReadyUserId = data.noReadyUser.userId;
+
+      if(noReadyUserId == userId) {
+        $('.option ul h3').html('请在' + data.time + 's内确认是否准备')
+      }
     }
 
   });
@@ -453,14 +479,21 @@
       return false
     }
 
-    if(data.leaveUser.userId == user.userId) {
-      weui.toast("操作成功", {
+    if(data.leaveUser.indexOf(user.userId) !== -1) {
+      weui.toast("您将离开房间", {
         duration: 3000,
-        callback: function(){ location.href = '/userInfo' }
-      })
+        callback: function(){
+          location.href = '/userInfo'
+        }
+      });
+
+      return;
     }
 
-    $('.user' + data.leaveUser.userId).remove()
+    data.leaveUser.forEach(function(item) {
+
+      $('.user' + item).remove()
+    });
 
   });
 
@@ -471,7 +504,7 @@
     }
 
     if(role == 1) {
-      Msgloading.hide();
+      typeof Msgloading == 'function' ? Msgloading.hide(): null;
     }
 
     weui.topTips(data.message, {
