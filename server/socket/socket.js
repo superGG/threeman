@@ -236,46 +236,49 @@ exports.start = async function (sockets, yuanData) {
                         return;
                     }
                     roomList[roomId].userList[user.userId].ready = true;
-                    console.log(roomId + "房间的" + user.name + "准备游戏")
+                    sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
+                    console.log(`The ${roomId}room's ${user.name} ready game`)
                     let ready_status = ReadyStatus(roomList[roomId]);
                     if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
+                        if (roomList[roomId].hasOwnProperty(ready_interval)) {//clear interval
+                            clearInterval(ready_interval)
+                            delete roomList[roomId].ready_interval;
+                        }
+                        console.log(`Stop the ${roomId} room's ready_interval`)
+                        console.log(`The ${roomId}room's player has all ready, began to bet`)
                         roomList[roomId].allReady = true;
-                        console.log(roomId + "房间的玩家已经全部准备，可以开始下注")
-                        if (roomList[roomId].hasOwnProperty(interval)) clearInterval(interval) //清楚倒计时
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
                     }
-                    if (!roomList[roomId].hasOwnProperty(interval)) { //第一个人准备的时候触发
-                        let time = 16;
-                        roomList[roomId].interval = setInterval(function () { //每秒
-                            time -= 1;
-                            sockets.to(roomId).emit('readyGame', {
-                                room: roomList[roomId],
-                                allReady: false,
-                                time
-                            });
-                            console.log(`${roomId}房间倒计时开始，${time}`)
-                            if (time <= 0) { //到时关闭
-                                clearInterval(interval)
-                                if (Object.keys(roomList[roomId].userList).length <= 2) {
-                                    delete roomList[roomId];
-                                    sockets.to(roomId).emit('closeRoom', {result: true, message: "房间关闭"})
-                                    console.log(`${roomId}房间，有人不准备，人数不够，房间关闭`)
-                                } else {
-                                    sockets.to(roomId).emit('leaveRoom', {
-                                        result: true,
-                                        leaveUser: ready_status.noReadyUserList
-                                    });
-                                    ready_status.noReadyUserList.forEach(userId =>{
-                                        delete roomList[roomId].userList[userId]
-                                        console.log(`${roomId}房间的${roomList[roomId].userList[userId].name}没有准备，自动离开房间`)
-                                    })
-
+                    if (!roomList[roomId].hasOwnProperty(ready_interval)) { //if the room no interval
+                        try {
+                            let time = 30;
+                            roomList[roomId].ready_interval = setInterval(function () { //每秒
+                                console.log(`${roomId}房间倒计时开始，${time}`)
+                                if (time <= 0) { //到时关闭
+                                    clearInterval(ready_interval)
+                                    if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
+                                        delete roomList[roomId];
+                                        sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
+                                        console.log(`The ${roomId}room's player not enough, close the room`)
+                                    } else {
+                                        console.log(`The ${roomId}room's player not enough, close the room`)
+                                        sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: ready_status.noReadyUserList});
+                                        ready_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
+                                            delete roomList[roomId].userList[userId]
+                                            console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not ready, auto leave the room`)
+                                        })
+                                    }
                                 }
-                            }
-                        }, 1000)
+                                sockets.to(roomId).emit('interval', {result:true, time});//send the interval time to view
+                                time -= 1;
+                            }, 1000)
+                        } catch (e) {
+                            console.log(`the ${roomId}room's interval have err`)
+                            console.log(e)
+                        }
                     }
-                    sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
+
                 } else {
                     socket.emit('readyGame', {result: false, message: '没有该房间'})
                 }
@@ -308,55 +311,75 @@ exports.start = async function (sockets, yuanData) {
                         return;
                     }
                     roomList[roomId].userList[user.userId].bet = money;
-
-                    console.log(`${roomId}房间的${user.name}下注${money}元`)
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
+                    console.log(`The ${roomId}room's ${user.name} bet ${money}interal`)
 
-
-                    if (isAllBet(roomList[roomId])) {  //判断是否全部下注s
+                    let bet_status = BetStatus(roomList[roomId]);
+                    if (bet_status.noBetNumber == 0) {  // If players already all bets
+                        if (roomList[roomId].hasOwnProperty(bet_interval)) {//clear interval
+                            clearInterval(bet_interval)
+                            delete roomList[roomId].bet_interval;
+                        }
+                        console.log(`Stop the ${roomId} room's bet_interval`)
                         //发牌
                         threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
-                        console.log(roomId + "房间的玩家已经全部下注，可以开始发牌")
+                        console.log(`Have players bet all of the ${roomId}room, start dealing poker`)
                         sockets.to(roomId).emit('deal', {room: roomList[roomId]});
-                        //5秒后显示结果
-                        try {
-                            await setTimeout(async() => {
-                                let session = await yuanData.createSession();
-                                var userArray = count(roomList[roomId].userList);
+                        //15秒后显示结果
+                        roomList[roomId].timeOut = await setTimeout(async() => {
+                            let session = await yuanData.createSession();
+                            var userArray = count(roomList[roomId].userList);
 
-                                //更新用户数据
-                                await Promise.all(userArray.map(user =>
-                                    session.execute(`update {user}`, {
-                                        userId: user.userId,
-                                        interal: (Number(user.interal) + user.result.count)
-                                    })
-                                ));
-                                await Promise.all(Object.keys(roomList[roomId].userList).map(async userId => {
-                                        let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`, {userId: Number(userId)})
-                                        console.log(`${temUser.name}的最新积分${temUser.interal}`)
-                                        roomList[roomId].userList[userId].interal = temUser.interal;
-                                    })
-                                );
-
-                                //添加积分记录
-                                console.log("-------------------add record-------")
-                                await Promise.all(userArray.map(user =>
-                                    session.execute(`add {record}`, {
-                                        interal: user.result.count,
-                                        user: {userId: user.userId}
-                                    })
-                                ));
-                                sockets.to(roomId).emit('compare', {userArray, room: roomList[roomId]});
-                                console.log(`${roomId}房间显示结果完毕，等待房主开始下一轮游戏`)
-                            }, 15000);
-                        } catch (err) {
-                            console.log("The calculation results error")
-                            console.log(err)
-                        }
-                        return;
+                            //更新用户数据
+                            await Promise.all(userArray.map(user =>
+                                session.execute(`update {user}`, {
+                                    userId: user.userId,
+                                    interal: (Number(user.interal) + user.result.count)
+                                })
+                            ));
+                            await Promise.all(Object.keys(roomList[roomId].userList).map(async userId => {
+                                    let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`, {userId: Number(userId)})
+                                    console.log(`The player ${temUser.name} newest interal is ${temUser.interal}`)
+                                    roomList[roomId].userList[userId].interal = temUser.interal;
+                                })
+                            );
+                            //添加积分记录
+                            console.log("-------------------add record-------")
+                            await Promise.all(userArray.map(user =>
+                                session.execute(`add {record}`, {
+                                    interal: user.result.count,
+                                    user: {userId: user.userId}
+                                })
+                            ));
+                            sockets.to(roomId).emit('compare', {userArray, room: roomList[roomId]});
+                            console.log(`The ${roomId}room display the results finished, waiting for the owner to satrt the next round of game`)
+                        }, 15000);
                     }
-                } else {
-                    socket.emit('bet', {result: false, message: '没有该房间'})
+                    if (!roomList[roomId].hasOwnProperty(bet_interval)) {
+                        roomList[roomId].bet_interval = setInterval(function () {
+                            let time = 30;
+                            console.log(`${roomId}房间倒计时开始，${time}`)
+                            if (time <= 0) { //到时关闭
+                                clearInterval(bet_interval)
+                                if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
+                                    delete roomList[roomId];
+                                    sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
+                                    console.log(`The ${roomId}room's player not enough, close the room`)
+                                } else {
+                                    console.log(`The ${roomId}room's player not enough, close the room`)
+                                    sockets.to(roomId).emit('leaveRoom', {result: true,leaveUser: bet_status.noReadyUserList});
+                                    bet_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
+                                        delete roomList[roomId].userList[userId]
+                                        console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not bet, auto leave the room`)
+                                    })
+                                }
+                            }
+                            sockets.to(roomId).emit('interval', {result: true, time});//send the interval time to view
+                            time -= 1;
+                        }, 1000)
+                    } else {
+                        socket.emit('bet', {result: false, message: '没有该房间'})
+                    }
                 }
             } catch (e) {
                 console.log(e)
@@ -370,6 +393,7 @@ exports.start = async function (sockets, yuanData) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             if (roomList[data.roomId] != null) {
+                if (roomList[roomId].hasOwnProperty(timeOut)) clearTimeout(roomList[data.roomId].timeOut)
                 roomList[data.roomId].lastOperationTime = new Date();
                 initGame(data.roomId);
                 sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
@@ -468,11 +492,7 @@ function ReadyStatus(room) {
     var user;
     for (var userId in users) {
         user = users[userId];
-        if (user.ready) {
-            ready_status.noReadyNumber--;
-        } else {
-            ready_status.noReadyUserList.push(userId);
-        }
+        !user.ready ? ready_status.noReadyUserList.push(userId) : ready_status.noReadyNumber--;
     }
     return ready_status;
 }
@@ -481,13 +501,16 @@ function ReadyStatus(room) {
  * 判断是否可以开始游戏 （全部下注）
  * @param room
  */
-function isAllBet(room) {
-    var userList = room.userList;
+function BetStatus(room) {
+    let bet_status = {};
+    let userList = room.userList;
+    bet_status.noBetNumber = Object.keys(userList).length;
+    bet_status.noBetUserList = [];
     for (var userId in userList) {
         var user = userList[userId];
-        if (!(user.bet > 0)) return false; //只要有一个没有下注，都不能开始
+        !(user.bet > 0) ? bet_status.noBetUserList.push(userId) : bet_status.noBetNumber--;
     }
-    return true;
+    return bet_status;
 }
 
 /**
