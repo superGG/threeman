@@ -235,6 +235,10 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('readyGame', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
+                    if (Object.keys(roomList[roomId].userList).length < 2) {
+                        socket.emit('readyGame',{reuslt:false,message:"人数过少，不能开始游戏"});
+                        return;
+                    }
                     roomList[roomId].userList[user.userId].ready = true;
                     sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
                     console.log(`The ${roomId} room's ${user.name} ready game`)
@@ -257,18 +261,17 @@ exports.start = async function (sockets, yuanData) {
                                 console.log(`The ${roomId} room's interval began:${time}`)
                                 if (time <= 0) { //到时关闭
                                     clearInterval(roomList[roomId].ready_interval)
-                                    if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
-                                        delete roomList[roomId];
-                                        sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
-                                        console.log(`The ${roomId} room's player not enough, close the room`)
-                                    } else {
-                                        console.log(`The ${roomId} room's player not enough, close the room`)
+                                    // if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
+                                    //     delete roomList[roomId];
+                                    //     sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
+                                    //     console.log(`The ${roomId} room's player not enough, close the room`)
+                                    // } else {
                                         sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: ready_status.noReadyUserList});
                                         ready_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
-                                            delete roomList[roomId].userList[userId]
                                             console.log(`The ${roomId} room's ${roomList[roomId].userList[userId].name} not ready, auto leave the room`)
+                                            delete roomList[roomId].userList[userId]
                                         })
-                                    }
+                                    // }
                                 }
                                 sockets.to(roomId).emit('interval', {result:true, time});//send the interval time to view
                                 time -= 1;
@@ -363,16 +366,15 @@ exports.start = async function (sockets, yuanData) {
                                 console.log(`${roomId}房间倒计时开始，${time}`)
                                 if (time <= 0) { //到时关闭
                                     clearInterval(roomList[roomId].bet_interval)
-                                    if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
+                                    if ((Object.keys(roomList[roomId].userList).length - bet_status.noReadyUserList.length) < 2) { //If ready player not enough 2
                                         delete roomList[roomId];
                                         sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
                                         console.log(`The ${roomId} room's player not enough, close the room`)
                                     } else {
-                                        console.log(`The ${roomId} room's player not enough, close the room`)
-                                        sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: bet_status.noReadyUserList});
-                                        bet_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
-                                            delete roomList[roomId].userList[userId]
+                                        sockets.to(roomId).emit('leaveRoom', { result: true,leaveUser: bet_status.noBetUserList});
+                                        bet_status.noBetUserList.forEach(userId => { //delete the room's player message who not ready game
                                             console.log(`The ${roomId} room's ${roomList[roomId].userList[userId].name} not bet, auto leave the room`)
+                                            delete roomList[roomId].userList[userId]
                                         })
                                     }
                                 }
