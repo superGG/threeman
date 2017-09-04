@@ -63,7 +63,7 @@ exports.start = async function (sockets, yuanData) {
                 room.poker = poker;
                 roomList[room.roomId] = room;
                 socket.join(room.roomId)
-                console.log(user.name + "用户创建" + room.roomId + "房间")
+                console.log(`${user.name} player create the ${room.roomId} room`)
                 sockets.to(room.roomId).emit('createRoom', {result: true, room});
             } catch (e) {
                 console.log('Failed to create romm by the user')
@@ -105,7 +105,7 @@ exports.start = async function (sockets, yuanData) {
                     user.bet = 0; //玩家下注金额
                     roomList[roomId].userList[user.userId] = user;
                     socket.join(roomId)
-                    console.log(user.name + "加入" + roomId + "房间")
+                    console.log(`${user.name} player join the ${roomId} room`)
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
                 } else {
                     socket.emit('joinRoom', {result: false, message: "该房间已关闭"});
@@ -131,7 +131,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: [user.userId]});
                     delete roomList[roomId].userList[user.userId]
                     socket.leave(roomId)
-                    console.log(user.name + "离开了房间")
+                    console.log(`${user.name} player leave the ${roomId} room`)
                 } else {
                     socket.emit('leaveRoom', {result: false, message: "该房间已关闭"});
                 }
@@ -152,7 +152,7 @@ exports.start = async function (sockets, yuanData) {
                     delete roomList[roomId];
                     sockets.to(roomId).emit('closeRoom', {result: true, message: "房主关闭房间"})
                     socket.leave(roomId)
-                    console.log(roomId + "房间关闭")
+                    console.log(`Close the ${roomId} room `)
                 } else {
                     socket.emit('closeRoom', {result: false, message: "该房间已关闭"});
                 }
@@ -172,7 +172,7 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].lastOperationTime = new Date();
                     roomList[roomId].start = true;
                     sockets.to(roomId).emit('startGame', {result: true, message: "游戏开始，上桌...."});
-                    console.log(`${roomId}房间的玩家上桌，准备开始游戏`)
+                    console.log(`The ${roomId} room player began to game view, ready to the game`)
                 } else {
                     socket.emit('startGame', {result: false, message: "该房间已关闭"});
                 }
@@ -213,7 +213,7 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].lastOperationTime = new Date();
                     roomList[roomId].minChip = Number(minChip);
                     socket.emit('setMinChip', {result: true, message: '设置成功'})
-                    console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
+                    console.log(`The ${roomId} room's new minChip is ${minChip} interal`)
                 } else {
                     socket.emit('setMinChip', {result: false, message: '没有该房间'})
                 }
@@ -237,36 +237,36 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId].ready = true;
                     sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
-                    console.log(`The ${roomId}room's ${user.name} ready game`)
+                    console.log(`The ${roomId} room's ${user.name} ready game`)
                     let ready_status = ReadyStatus(roomList[roomId]);
                     if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
-                        if (roomList[roomId].hasOwnProperty(ready_interval)) {//clear interval
-                            clearInterval(ready_interval)
+                        if (roomList[roomId].hasOwnProperty("ready_interval")) {//clear interval
+                            clearInterval(roomList[roomId].ready_interval)
                             delete roomList[roomId].ready_interval;
                         }
                         console.log(`Stop the ${roomId} room's ready_interval`)
-                        console.log(`The ${roomId}room's player has all ready, began to bet`)
+                        console.log(`The ${roomId} room's player has all ready, began to bet`)
                         roomList[roomId].allReady = true;
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
                     }
-                    if (!roomList[roomId].hasOwnProperty(ready_interval)) { //if the room no interval
+                    if (!roomList[roomId].hasOwnProperty("ready_interval")) { //if the room no interval
                         try {
                             let time = 30;
                             roomList[roomId].ready_interval = setInterval(function () { //每秒
-                                console.log(`${roomId}房间倒计时开始，${time}`)
+                                console.log(`The ${roomId} room's interval began:${time}`)
                                 if (time <= 0) { //到时关闭
-                                    clearInterval(ready_interval)
+                                    clearInterval(roomList[roomId].ready_interval)
                                     if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
                                         delete roomList[roomId];
                                         sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
-                                        console.log(`The ${roomId}room's player not enough, close the room`)
+                                        console.log(`The ${roomId} room's player not enough, close the room`)
                                     } else {
-                                        console.log(`The ${roomId}room's player not enough, close the room`)
+                                        console.log(`The ${roomId} room's player not enough, close the room`)
                                         sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: ready_status.noReadyUserList});
                                         ready_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
                                             delete roomList[roomId].userList[userId]
-                                            console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not ready, auto leave the room`)
+                                            console.log(`The ${roomId} room's ${roomList[roomId].userList[userId].name} not ready, auto leave the room`)
                                         })
                                     }
                                 }
@@ -312,21 +312,21 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId].bet = money;
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
-                    console.log(`The ${roomId}room's ${user.name} bet ${money}interal`)
+                    console.log(`The ${roomId} room's ${user.name} bet ${money}interal`)
 
                     let bet_status = BetStatus(roomList[roomId]);
                     if (bet_status.noBetNumber == 0) {  // If players already all bets
-                        if (roomList[roomId].hasOwnProperty(bet_interval)) {//clear interval
-                            clearInterval(bet_interval)
+                        if (roomList[roomId].hasOwnProperty("bet_interval")) {//clear interval
+                            clearInterval(roomList[roomId].bet_interval)
                             delete roomList[roomId].bet_interval;
                         }
                         console.log(`Stop the ${roomId} room's bet_interval`)
                         //发牌
                         threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
-                        console.log(`Have players bet all of the ${roomId}room, start dealing poker`)
+                        console.log(`Have players bet all of the ${roomId} room, start dealing poker`)
                         sockets.to(roomId).emit('deal', {room: roomList[roomId]});
                         //15秒后显示结果
-                        roomList[roomId].timeOut = await setTimeout(async() => {
+                        await setTimeout(async() => {
                             let session = await yuanData.createSession();
                             var userArray = count(roomList[roomId].userList);
 
@@ -352,31 +352,37 @@ exports.start = async function (sockets, yuanData) {
                                 })
                             ));
                             sockets.to(roomId).emit('compare', {userArray, room: roomList[roomId]});
-                            console.log(`The ${roomId}room display the results finished, waiting for the owner to satrt the next round of game`)
+                            console.log(`The ${roomId} room display the results finished, waiting for the owner to satrt the next round of game`)
                         }, 15000);
+                        return;
                     }
-                    if (!roomList[roomId].hasOwnProperty(bet_interval)) {
-                        roomList[roomId].bet_interval = setInterval(function () {
+                    if (!roomList[roomId].hasOwnProperty("bet_interval")) {
+                        try {
                             let time = 30;
-                            console.log(`${roomId}房间倒计时开始，${time}`)
-                            if (time <= 0) { //到时关闭
-                                clearInterval(bet_interval)
-                                if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
-                                    delete roomList[roomId];
-                                    sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
-                                    console.log(`The ${roomId}room's player not enough, close the room`)
-                                } else {
-                                    console.log(`The ${roomId}room's player not enough, close the room`)
-                                    sockets.to(roomId).emit('leaveRoom', {result: true,leaveUser: bet_status.noReadyUserList});
-                                    bet_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
-                                        delete roomList[roomId].userList[userId]
-                                        console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not bet, auto leave the room`)
-                                    })
+                            roomList[roomId].bet_interval = setInterval(function () {
+                                console.log(`${roomId}房间倒计时开始，${time}`)
+                                if (time <= 0) { //到时关闭
+                                    clearInterval(roomList[roomId].bet_interval)
+                                    if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
+                                        delete roomList[roomId];
+                                        sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
+                                        console.log(`The ${roomId} room's player not enough, close the room`)
+                                    } else {
+                                        console.log(`The ${roomId} room's player not enough, close the room`)
+                                        sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: bet_status.noReadyUserList});
+                                        bet_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
+                                            delete roomList[roomId].userList[userId]
+                                            console.log(`The ${roomId} room's ${roomList[roomId].userList[userId].name} not bet, auto leave the room`)
+                                        })
+                                    }
                                 }
-                            }
-                            sockets.to(roomId).emit('interval', {result: true, time});//send the interval time to view
-                            time -= 1;
-                        }, 1000)
+                                sockets.to(roomId).emit('interval', {result: true, time});//send the interval time to view
+                                time -= 1;
+                            }, 1000)
+                        } catch (e) {
+                            console.log(`the ${roomId} room's interval have err`)
+                            console.log(e)
+                        }
                     } else {
                         socket.emit('bet', {result: false, message: '没有该房间'})
                     }
@@ -390,10 +396,9 @@ exports.start = async function (sockets, yuanData) {
          * 结束本轮游戏，准备下一轮
          */
         socket.on('endGame', function (data) {
-            console.log(`${data.roomId}房间的本轮游戏结束`)
+            console.log(`The ${data.roomId} room end of game to the next round`)
             //初始化改房间所有人的信息
             if (roomList[data.roomId] != null) {
-                if (roomList[roomId].hasOwnProperty(timeOut)) clearTimeout(roomList[data.roomId].timeOut)
                 roomList[data.roomId].lastOperationTime = new Date();
                 initGame(data.roomId);
                 sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
