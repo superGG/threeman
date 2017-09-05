@@ -13,11 +13,12 @@
   var socket = io.connect(socketUrl);
   var paramsArr = window.location.href.split("?")[1].split('&');
   var roomId = paramsArr[0].split("=")[1];
-  var role = paramsArr[1].split('=')[1];
+  var role = localStorage.getItem('role');
   var userId = localStorage.getItem('userId');
   var Msgloading = '', timer = '';
   var user = ""
   var start = true;
+  var leaveUser = '';
 
   /**
    * 渲染用户扑克信息
@@ -237,6 +238,13 @@
 
       var val = item.result.rank === 5 ? "三公" : item.result.number + "点";
 
+      if(item.userId == userId) {
+
+        $('.my .info .count').html(item.interal)
+      }else {
+        $('.user' + item.userId + ' .userInfo .count').html(item.interal);
+      }
+
 
       str = str + '<div class="item"> ' +
         '<span class="ranking">'+ (index + 1) +'</span>' +
@@ -389,7 +397,6 @@
     if(data.readyUser) {
 
       var readyUserId = data.readyUser.userId;
-
       if(userId == readyUserId) {
 
         renderOption(2)
@@ -398,13 +405,28 @@
         $('.user'+readyUserId+' .ready').html("准备中").css('color','#ffb422')
       }
 
-    }else {
+    }
 
-      var noReadyUserId = data.noReadyUser.userId;
+  });
 
-      if(noReadyUserId == userId) {
-        $('.option ul h3').html('请在' + data.time + 's内确认是否准备')
-      }
+  socket.on('interval', function(data) {
+
+    if(errorServer(data)) {
+      return false
+    }
+
+    if(data.noReadyUserList.indexOf(userId) !== -1 && data.time > 0) {
+
+      $('.option ul h3').html('请在' + data.time + 's内确认是否准备')
+    }
+
+  });
+
+  socket.on('bet interval', function(data) {
+
+    if(data.noBetUserList.indexOf(userId) !== -1) {
+
+      $(".my .option ul h3").html('请选择你要投放的注数(' + data.time + ")s")
     }
 
   });
@@ -457,7 +479,6 @@
     var userArray = data.userArray;
 
     renderResult(userArray)
-    renderUserInfo(data.room)
   });
 
   socket.on('endGame', function(data) {
@@ -479,7 +500,29 @@
       return false
     }
 
-    if(data.leaveUser.indexOf(user.userId) !== -1) {
+    leaveUser = data.leaveUser;
+
+    if(data.leaveUser.indexOf(userId) !== -1) {
+
+      if(role == 1) {
+
+
+        var nextUserId = '';
+
+        $(".player").each(function(data) {
+
+          var _userId = $(this).attr('class').split('user')[1];
+
+          if(leaveUser.indexOf(_userId) === -1) {
+            nextUserId = _userId
+          }
+        });
+
+        socket.emit('changeRole', {
+          roomId: roomId,
+          userId: nextUserId
+        })
+      }
       weui.toast("您将离开房间", {
         duration: 3000,
         callback: function(){
@@ -496,6 +539,14 @@
     });
 
   });
+
+  socket.on("changeRole", function(data) {
+
+    if(data.userId == userId) {
+      localStorage.setItem('role', 1);
+      location.reload()
+    }
+  })
 
   socket.on("closeRoom", function(data) {
 

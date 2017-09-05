@@ -60,7 +60,6 @@ exports.start = async function (sockets, yuanData) {
                 user.ready = false;//玩家准备状态
                 user.bet = 0; //玩家下注金额
                 room.userList[user.userId] = user;
-                room.poker = poker;
                 roomList[room.roomId] = room;
                 socket.join(room.roomId)
                 console.log(user.name + "用户创建" + room.roomId + "房间")
@@ -128,7 +127,7 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('leaveRoom', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
-                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: [user.userId]});
+                    sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: [String(user.userId)]});
                     delete roomList[roomId].userList[user.userId]
                     socket.leave(roomId)
                     console.log(user.name + "离开了房间")
@@ -149,6 +148,9 @@ exports.start = async function (sockets, yuanData) {
                 var roomId = data.roomId;
                 if (roomList[roomId] != null) {
                     roomList[roomId].lastOperationTime = new Date();
+                    if(roomList[roomId].ready_interval) {
+                        clearInterval(roomList[roomId].ready_interval)
+                    }
                     delete roomList[roomId];
                     sockets.to(roomId).emit('closeRoom', {result: true, message: "房主关闭房间"})
                     socket.leave(roomId)
@@ -240,8 +242,8 @@ exports.start = async function (sockets, yuanData) {
                     console.log(`The ${roomId}room's ${user.name} ready game`)
                     let ready_status = ReadyStatus(roomList[roomId]);
                     if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
-                        if (roomList[roomId].hasOwnProperty(ready_interval)) {//clear interval
-                            clearInterval(ready_interval)
+                        if (roomList[roomId].hasOwnProperty('ready_interval')) {//clear interval
+                            clearInterval(roomList[roomId].ready_interval)
                             delete roomList[roomId].ready_interval;
                         }
                         console.log(`Stop the ${roomId} room's ready_interval`)
@@ -250,27 +252,31 @@ exports.start = async function (sockets, yuanData) {
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
                     }
-                    if (!roomList[roomId].hasOwnProperty(ready_interval)) { //if the room no interval
+                    if (!roomList[roomId].hasOwnProperty('ready_interval')) { //if the room no interval
                         try {
                             let time = 30;
                             roomList[roomId].ready_interval = setInterval(function () { //每秒
-                                console.log(`${roomId}房间倒计时开始，${time}`)
+                              let ready_status = ReadyStatus(roomList[roomId]);
+                              console.log(`${roomId}房间倒计时开始，${time}`)
                                 if (time <= 0) { //到时关闭
-                                    clearInterval(ready_interval)
+                                    clearInterval(roomList[roomId].ready_interval)
                                     if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
                                         delete roomList[roomId];
-                                        sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
+                                        sockets.to(roomId).emit('closeRoom', {result: true, message: "准备人数不够,房间关闭"})
                                         console.log(`The ${roomId}room's player not enough, close the room`)
                                     } else {
                                         console.log(`The ${roomId}room's player not enough, close the room`)
                                         sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: ready_status.noReadyUserList});
                                         ready_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
-                                            delete roomList[roomId].userList[userId]
-                                            console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not ready, auto leave the room`)
+                                          console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not ready, auto leave the room`)
+                                          delete roomList[roomId].userList[userId]
                                         })
+
+                                      roomList[roomId].allReady = true;
+                                      sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                                     }
                                 }
-                                sockets.to(roomId).emit('interval', {result:true, time});//send the interval time to view
+                                sockets.to(roomId).emit('interval', {result:true, time, noReadyUserList: ready_status.noReadyUserList});//send the interval time to view
                                 time -= 1;
                             }, 1000)
                         } catch (e) {
@@ -316,69 +322,29 @@ exports.start = async function (sockets, yuanData) {
 
                     let bet_status = BetStatus(roomList[roomId]);
                     if (bet_status.noBetNumber == 0) {  // If players already all bets
-                        if (roomList[roomId].hasOwnProperty(bet_interval)) {//clear interval
-                            clearInterval(bet_interval)
-                            delete roomList[roomId].bet_interval;
-                        }
-                        console.log(`Stop the ${roomId} room's bet_interval`)
-                        //发牌
-                        threeman.setPlayer(roomList[roomId].userList, roomList[roomId].poker);
-                        console.log(`Have players bet all of the ${roomId}room, start dealing poker`)
-                        sockets.to(roomId).emit('deal', {room: roomList[roomId]});
-                        //15秒后显示结果
-                        roomList[roomId].timeOut = await setTimeout(async() => {
-                            let session = await yuanData.createSession();
-                            var userArray = count(roomList[roomId].userList);
-
-                            //更新用户数据
-                            await Promise.all(userArray.map(user =>
-                                session.execute(`update {user}`, {
-                                    userId: user.userId,
-                                    interal: (Number(user.interal) + user.result.count)
-                                })
-                            ));
-                            await Promise.all(Object.keys(roomList[roomId].userList).map(async userId => {
-                                    let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`, {userId: Number(userId)})
-                                    console.log(`The player ${temUser.name} newest interal is ${temUser.interal}`)
-                                    roomList[roomId].userList[userId].interal = temUser.interal;
-                                })
-                            );
-                            //添加积分记录
-                            console.log("-------------------add record-------")
-                            await Promise.all(userArray.map(user =>
-                                session.execute(`add {record}`, {
-                                    interal: user.result.count,
-                                    user: {userId: user.userId}
-                                })
-                            ));
-                            sockets.to(roomId).emit('compare', {userArray, room: roomList[roomId]});
-                            console.log(`The ${roomId}room display the results finished, waiting for the owner to satrt the next round of game`)
-                        }, 15000);
+                      deal(roomId)
+                      return;
                     }
-                    if (!roomList[roomId].hasOwnProperty(bet_interval)) {
-                        roomList[roomId].bet_interval = setInterval(function () {
-                            let time = 30;
+                    if (!roomList[roomId].hasOwnProperty('bet_interval')) {
+                      let time = 30;
+                      roomList[roomId].bet_interval = setInterval(function () {
+                            let bet_status = BetStatus(roomList[roomId]);
                             console.log(`${roomId}房间倒计时开始，${time}`)
                             if (time <= 0) { //到时关闭
-                                clearInterval(bet_interval)
-                                if ((Object.keys(roomList[roomId].userList).length - ready_status.noReadyUserList.length) < 2) { //If ready player not enough 2
-                                    delete roomList[roomId];
-                                    sockets.to(roomId).emit('closeRoom', {result: true, message: "人数不够,房间关闭"})
-                                    console.log(`The ${roomId}room's player not enough, close the room`)
-                                } else {
-                                    console.log(`The ${roomId}room's player not enough, close the room`)
-                                    sockets.to(roomId).emit('leaveRoom', {result: true,leaveUser: bet_status.noReadyUserList});
-                                    bet_status.noReadyUserList.forEach(userId => { //delete the room's player message who not ready game
-                                        delete roomList[roomId].userList[userId]
-                                        console.log(`The ${roomId}room's ${roomList[roomId].userList[userId].name} not bet, auto leave the room`)
-                                    })
-                                }
+                                clearInterval(roomList[roomId].bet_interval);
+                                delete roomList[roomId].bet_interval;
+                                bet_status.noBetUserList.forEach(function(item) {
+
+                                    roomList[roomId].userList[item].bet = roomList[roomId].minChip;
+                                })
+
+                                deal(roomId)
                             }
-                            sockets.to(roomId).emit('interval', {result: true, time});//send the interval time to view
+                            sockets.to(roomId).emit('bet interval', {result: true, time, noBetUserList: bet_status.noBetUserList});//send the interval time to view
                             time -= 1;
                         }, 1000)
                     } else {
-                        socket.emit('bet', {result: false, message: '没有该房间'})
+                        sockets.to(roomId).emit('bet', {result: false, message: '没有该房间'})
                     }
                 }
             } catch (e) {
@@ -393,13 +359,23 @@ exports.start = async function (sockets, yuanData) {
             console.log(`${data.roomId}房间的本轮游戏结束`)
             //初始化改房间所有人的信息
             if (roomList[data.roomId] != null) {
-                if (roomList[roomId].hasOwnProperty(timeOut)) clearTimeout(roomList[data.roomId].timeOut)
+                if (roomList[data.roomId].hasOwnProperty('timeOut')) clearTimeout(roomList[data.roomId].timeOut)
                 roomList[data.roomId].lastOperationTime = new Date();
                 initGame(data.roomId);
                 sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
             } else {
                 socket.emit('endGame', {result: false, message: '没有该房间'})
             }
+        })
+
+        socket.on('changeRole', function(data) {
+
+            let roomId = data.roomId;
+            let userId = data.userId;
+
+            sockets.to(roomId).emit('changeRole', {
+                userId
+            })
         })
 
 
@@ -430,6 +406,47 @@ exports.start = async function (sockets, yuanData) {
         // })
 
     });
+
+    function deal(roomId) {
+      if (roomList[roomId].hasOwnProperty('bet_interval')) {//clear interval
+        clearInterval(roomList[roomId].bet_interval)
+        delete roomList[roomId].bet_interval;
+      }
+      console.log(`Stop the ${roomId} room's bet_interval`)
+      //发牌
+      threeman.setPlayer(roomList[roomId].userList, poker);
+      console.log(`Have players bet all of the ${roomId}room, start dealing poker`)
+      sockets.to(roomId).emit('deal', {room: roomList[roomId]});
+      //15秒后显示结果
+      roomList[roomId].timeOut = setTimeout(async() => {
+        let session = await yuanData.createSession();
+        var userArray = count(roomList[roomId].userList);
+
+        //更新用户数据
+        await Promise.all(userArray.map(user =>
+          session.execute(`update {user}`, {
+            userId: user.userId,
+            interal: (Number(user.interal) + user.result.count)
+          })
+        ));
+        await Promise.all(Object.keys(roomList[roomId].userList).map(async userId => {
+            let temUser = await session.query(`query {user(userId=$userId):{interal,name}}`, {userId: Number(userId)})
+            console.log(`The player ${temUser.name} newest interal is ${temUser.interal}`)
+            roomList[roomId].userList[userId].interal = temUser.interal;
+          })
+        );
+        //添加积分记录
+        console.log("-------------------add record-------")
+        await Promise.all(userArray.map(user =>
+          session.execute(`add {record}`, {
+            interal: user.result.count,
+            user: {userId: user.userId}
+          })
+        ));
+        sockets.to(roomId).emit('compare', {userArray: userArray});
+        console.log(`The ${roomId}room display the results finished, waiting for the owner to satrt the next round of game`)
+      }, 15000);
+    }
 }
 
 /**
@@ -441,6 +458,7 @@ function initGame(roomId) {
     for (var userId in roomList[roomId].userList) {
         delete roomList[roomId].userList[userId].result;
         delete roomList[roomId].userList[userId].poker;
+        delete roomList[roomId].bet_interval;
         roomList[roomId].userList[userId].ready = false;
         roomList[roomId].userList[userId].bet = 0;
     }
