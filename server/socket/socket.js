@@ -338,10 +338,8 @@ exports.start = async function (sockets, yuanData) {
                                 clearInterval(roomList[roomId].bet_interval);
                                 delete roomList[roomId].bet_interval;
                                 bet_status.noBetUserList.forEach(function(item) {
-
                                     roomList[roomId].userList[item].bet = roomList[roomId].minChip;
                                 })
-
                                 deal(roomId)
                             }
                             sockets.to(roomId).emit('bet interval', {result: true, time, noBetUserList: bet_status.noBetUserList});//send the interval time to view
