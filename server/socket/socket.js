@@ -62,7 +62,7 @@ exports.start = async function (sockets, yuanData) {
                 room.userList[user.userId] = user;
                 roomList[room.roomId] = room;
                 socket.join(room.roomId)
-                console.log(user.name + "用户创建" + room.roomId + "房间")
+                console.log(`${user.name} player create the ${room.roomId} room`)
                 sockets.to(room.roomId).emit('createRoom', {result: true, room});
             } catch (e) {
                 console.log('Failed to create romm by the user')
@@ -104,7 +104,7 @@ exports.start = async function (sockets, yuanData) {
                     user.bet = 0; //玩家下注金额
                     roomList[roomId].userList[user.userId] = user;
                     socket.join(roomId)
-                    console.log(user.name + "加入" + roomId + "房间")
+                    console.log(`${user.name} player join the ${roomId} room`)
                     sockets.to(roomId).emit('joinRoom', {result: true, room: roomList[roomId]});
                 } else {
                     socket.emit('joinRoom', {result: false, message: "该房间已关闭"});
@@ -130,7 +130,7 @@ exports.start = async function (sockets, yuanData) {
                     sockets.to(roomId).emit('leaveRoom', {result: true, leaveUser: [String(user.userId)]});
                     delete roomList[roomId].userList[user.userId]
                     socket.leave(roomId)
-                    console.log(user.name + "离开了房间")
+                    console.log(`${user.name} player leave the ${roomId} room`)
                 } else {
                     socket.emit('leaveRoom', {result: false, message: "该房间已关闭"});
                 }
@@ -154,7 +154,7 @@ exports.start = async function (sockets, yuanData) {
                     delete roomList[roomId];
                     sockets.to(roomId).emit('closeRoom', {result: true, message: "房主关闭房间"})
                     socket.leave(roomId)
-                    console.log(roomId + "房间关闭")
+                    console.log(`Close the ${roomId} room `)
                 } else {
                     socket.emit('closeRoom', {result: false, message: "该房间已关闭"});
                 }
@@ -174,7 +174,7 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].lastOperationTime = new Date();
                     roomList[roomId].start = true;
                     sockets.to(roomId).emit('startGame', {result: true, message: "游戏开始，上桌...."});
-                    console.log(`${roomId}房间的玩家上桌，准备开始游戏`)
+                    console.log(`The ${roomId} room player began to game view, ready to the game`)
                 } else {
                     socket.emit('startGame', {result: false, message: "该房间已关闭"});
                 }
@@ -215,7 +215,7 @@ exports.start = async function (sockets, yuanData) {
                     roomList[roomId].lastOperationTime = new Date();
                     roomList[roomId].minChip = Number(minChip);
                     socket.emit('setMinChip', {result: true, message: '设置成功'})
-                    console.log(`${roomId}房间设置最低下注筹码${minChip}元`)
+                    console.log(`The ${roomId} room's new minChip is ${minChip} interal`)
                 } else {
                     socket.emit('setMinChip', {result: false, message: '没有该房间'})
                 }
@@ -237,9 +237,13 @@ exports.start = async function (sockets, yuanData) {
                         socket.emit('readyGame', {result: false, message: "该用户没有加入房间"});
                         return;
                     }
+                    if (Object.keys(roomList[roomId].userList).length < 2) {
+                        socket.emit('readyGame',{reuslt:false,message:"人数过少，不能开始游戏"});
+                        return;
+                    }
                     roomList[roomId].userList[user.userId].ready = true;
                     sockets.to(roomId).emit('readyGame', {result: true, readyUser: user});
-                    console.log(`The ${roomId}room's ${user.name} ready game`)
+                    console.log(`The ${roomId} room's ${user.name} ready game`)
                     let ready_status = ReadyStatus(roomList[roomId]);
                     if (ready_status.noReadyNumber == 0) {  //判断是否可以下注
                         if (roomList[roomId].hasOwnProperty('ready_interval')) {//clear interval
@@ -247,7 +251,7 @@ exports.start = async function (sockets, yuanData) {
                             delete roomList[roomId].ready_interval;
                         }
                         console.log(`Stop the ${roomId} room's ready_interval`)
-                        console.log(`The ${roomId}room's player has all ready, began to bet`)
+                        console.log(`The ${roomId} room's player has all ready, began to bet`)
                         roomList[roomId].allReady = true;
                         sockets.to(roomId).emit('readyGame', {room: roomList[roomId], allReady: true});
                         return;
@@ -318,7 +322,7 @@ exports.start = async function (sockets, yuanData) {
                     }
                     roomList[roomId].userList[user.userId].bet = money;
                     sockets.to(roomId).emit('bet', {result: true, betUser: user, money: money});
-                    console.log(`The ${roomId}room's ${user.name} bet ${money}interal`)
+                    console.log(`The ${roomId} room's ${user.name} bet ${money}interal`)
 
                     let bet_status = BetStatus(roomList[roomId]);
                     if (bet_status.noBetNumber == 0) {  // If players already all bets
@@ -356,10 +360,11 @@ exports.start = async function (sockets, yuanData) {
          * 结束本轮游戏，准备下一轮
          */
         socket.on('endGame', function (data) {
-            console.log(`${data.roomId}房间的本轮游戏结束`)
+            console.log(`The ${data.roomId} room end of game to the next round`)
             //初始化改房间所有人的信息
             if (roomList[data.roomId] != null) {
                 if (roomList[data.roomId].hasOwnProperty('timeOut')) clearTimeout(roomList[data.roomId].timeOut)
+
                 roomList[data.roomId].lastOperationTime = new Date();
                 initGame(data.roomId);
                 sockets.to(data.roomId).emit('endGame', {result: true, message: "结束本轮游戏", room: roomList[data.roomId]})
