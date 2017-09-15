@@ -584,6 +584,7 @@ function count(userList) {
             user.result.count = -Number(user.bet);
         }
     })
+    userArray[0].result.count = Number(userArray[0].result.count)*0.95;
     return userArray;
 }
 
