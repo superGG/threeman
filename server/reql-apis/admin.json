@@ -42,13 +42,8 @@
     "reql" : "query {user(phone=$phone) : {userId,phone,lastLoginTime,registerTime}}",
     "comment" : "根据用户手机获取用户详情"
   },{
-    "url" : "/admin/questionList",
-    "reql" : "query [question : {*}]",
-    "comment" : "获取所有问题"
-  },{
-    "url" : "/admin/question/add",
-    "reql" : "add {question}",
-    "comment" : "添加问题"
+    "url" : "/admin/system",
+    "method":"user.system"
   },{
     "url" : "/admin/question/delete",
     "reql" : "delete {question}"

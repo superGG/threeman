@@ -188,3 +188,20 @@ exports.adminLogin = ({param}) => {
 		throw new Error('账号或密码错误')
 	}
 }
+
+let system = 1;
+exports.checkSystem = async({param}) => {
+    let system_status = param.system;
+    if (system_status != null) {
+        system = Number(system_status);
+        if (!system) {
+            throw new Error("系统正在维护中")
+        }
+    } else {
+        if (!system) throw new Error("系统正在维护中")
+    }
+}
+
+exports.system = async({param}) => {
+    system = Number(param.system);
+}

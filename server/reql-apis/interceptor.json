@@ -2,6 +2,9 @@
   "interceptor" : {
     "before" : [{
       "url" : "*",
+      "method":"user.checkSystem"
+    },{
+      "url" : "*",
       "method" : "user.checkToken"
     }, {
       "url" : "*",
