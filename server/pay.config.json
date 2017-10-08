@@ -1,0 +1,17 @@
+{
+  "alipay" : {
+	"PID" : "2088122547601727",
+	"APPID" : "2017042206893746",
+	"primaryCertFile" : "${__server}/res/certs/alipay-primary.pem",
+	"publicCertFile" : "${__server}/res/certs/alipay-public.pem",
+	"$dev-notifyUrl" : "http://1e33efc9.ngrok.io/api/pay/alipay/notify",
+	"$prod-notifyUrl" : "http://open-end.cn:8080/api/pay/alipay/notify"
+  },
+  "wechat" : {
+	"appId" : "wx4aba3f27def2bf88",
+	"mchId" : "1474068002",
+	"key" : "61D486B47F80FA3E526F9835C48DC0C5",
+	"$dev-notifyUrl" : "http://1e33efc9.ngrok.io/api/pay/wechat/notify",
+	"$prod-notifyUrl" : "http://open-end.cn:8080/api/pay/wechat/notify"
+  }
+}

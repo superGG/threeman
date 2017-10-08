@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>个人</title>
+    <link rel="stylesheet" type="text/css" href="weui.css">
+    <link rel="stylesheet" href="bass.css">
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.js"></script>
+    <script src="js/tool.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/libs/weuijs/1.1.2/weui.min.js"></script>
+    <script src="js/socket.io.js"></script>
+    <style>
+        .page__hd {
+            padding: 40px;
+        }
+
+        .page__title {
+            text-align: left;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .page__desc {
+            margin-top: 5px;
+            color: #888;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .site {
+            background-image: url(./kw.png);
+        }
+
+        .site .avatar {
+            height: 100%;
+            line-height: 80px;
+            text-align: center;
+            color: #fff;
+            font-size: 30px;
+            overflow: hidden;
+        }
+
+        .weui-cells {
+            margin-top: 1.17647059em;
+            background-color: #FFFFFF;
+            line-height: 1.47058824;
+            font-size: 17px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .room__id {
+            font-size: 40px;
+            font-weight: bolder;
+        }
+    </style>
+</head>
+<body>
+    <div class="page__hd">
+        <h1 class="page__title">游戏房间</h1>
+        <p class="page__desc">可告诉好友房间号码，让好友一起来玩吧。</p>
+    </div>
+    <div class="page__bd">
+        <div class="weui-gallery" id="gallery" style="opacity: 0; display: none;">
+            <span class="weui-gallery__img" id="galleryImg" style="background-image:url(./images/pic_160.png)"></span>
+            <div class="weui-gallery__opr">
+                <a href="javascript:" class="weui-gallery__del">
+                    <i class="weui-icon-delete weui-icon_gallery-delete"></i>
+                </a>
+            </div>
+        </div>
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">房间号</label>
+                </div>
+                <div class="weui-cell__bd room__id">
+                    获取中
+                </div>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <div class="weui-uploader">
+                        <div class="weui-uploader__hd">
+                            <p class="weui-uploader__title">座位</p>
+                            <div class="weui-uploader__info">0/5</div>
+                        </div>
+                        <div class="weui-uploader__bd">
+                            <ul class="weui-uploader__files" id="uploaderFiles">
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                                <li class="weui-uploader__file site" ></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="weui-cells__title min__chip">选择最低筹码</div>
+        <div class="weui-cells min__chip">
+            <div class="weui-cell weui-cell_select">
+                <div class="weui-cell__bd">
+                    <select class="weui-select" name="select1">
+                        <option selected="" value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="page__bd page__bd_spacing">
+            <a href="javascript:;" id="start" class="weui-btn weui-btn_primary">开始游戏</a>
+            <a href="javascript:;" id="close" class="weui-btn weui-btn_default">关闭房间</a>
+            <a href="javascript:;" id="cancel" class="weui-btn weui-btn_default">离开房间</a>
+        </div>
+    </div>
+
+</body>
+<script src="js/waitRoom.js"></script>
+</html>

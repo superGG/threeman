@@ -1,0 +1,26 @@
+{
+  "server" : {
+	"port" : "8080"
+  },
+  "reql" : {
+	"$dev-database" : "toffvpn",
+	"$dev-username" : "root",
+	"$dev-password" : null,
+	"$dev-host" : "127.0.0.1",
+	"$dev-port" : "3306",
+	"$dev-ddl" : "update",
+	"$prod-database" : "toffvpn",
+	"$prod-username" : "root",
+	"$prod-password" : "haimeiyou",
+	"$prod-host" : "localhost",
+	"$prod-port" : "3306",
+	"$prod-ddl" : "create",
+	"schemas" : "${__project}/schemas.json"
+  },
+  "reql-api" : {
+	"base" : "/api",
+	"dir" : "${__server}/reql-apis",
+	"interceptorDir" : "${__server}/reql-interceptors",
+	"tmp" : true
+  }
+}

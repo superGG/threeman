@@ -1,0 +1,9 @@
+{
+  "name" : "toff-vpn-task",
+  "script" : "./bin/timed_task",
+  "env" : {
+	"NODE_ENV" : "production"
+  },
+  "error_file" : "./logs/task_err.log",
+  "out_file" : "./logs/task_out.log"
+}

@@ -1,0 +1,138 @@
+{
+  "user" : {
+    "userId" : {
+      "type": "int",
+      "primaryKey": true,
+      "autoIncrement": true
+    },
+    "name" : {
+      "type" : "string",
+      "length" : "20"
+    },
+    "phone" : {
+      "type" : "string",
+      "length" : "11"
+    },
+    "password" : {
+      "type" : "string",
+      "length" : "32"
+    },
+    "image" : {
+      "type" : "string"
+    },
+    "role" : {
+      "type" : "object",
+      "belongsTo" : "role"
+    },
+    "interal" : {
+      "type" : "double",
+      "default" : 0,
+      "comment" : "积分"
+    },
+    "lastLoginTime": {
+      "type": "date",
+      "comment": "最近一次登录时间"
+    },
+    "registerTime" : {
+      "type" : "date",
+      "comment" : "注册时间"
+    },
+    "records":{
+      "type":"array",
+      "hasMany" : "record",
+      "mappedby" :"user"
+    }
+  },
+  "role" : {
+    "roleId" : {
+      "type" : "int",
+      "primaryKey" : true,
+      "autoIncrement" : true
+    },
+    "name" : {
+      "type" : "string",
+      "length" : "20"
+    },
+    "attr" : {
+      "type" : "enum",
+      "values" : ["普通", "公有", "超级管理员"],
+      "default" : "普通"
+    },
+    "actions" : {
+      "type" : "array",
+      "hasMany" : "action",
+      "mappedby" : "role"
+    }
+  },
+  "action" : {
+    "actionId": {
+      "type": "int",
+      "primaryKey": true,
+      "autoIncrement": true
+    },
+    "url": {
+      "type": "string"
+    },
+    "role": {
+      "type": "object",
+      "belongsTo": "role"
+    }
+  },
+  "question" : {
+    "questionId" : {
+      "type": "int",
+      "primaryKey": true,
+      "autoIncrement": true
+    },
+    "title" : {
+      "type" : "string"
+    },
+    "content" : {
+      "type" : "string"
+    }
+  },
+  "version" : {
+    "versionId" : {
+      "type" : "int",
+      "primaryKey" : true,
+      "autoIncrement" : true
+    },
+    "version" : {
+      "type" : "string",
+      "comment" : "版本号"
+    },
+    "summary" : {
+      "type" : "string",
+      "comment" : "发布说明"
+    },
+    "url" : {
+      "type" : "string",
+      "comment" : "下载链接"
+    }
+  },
+  "record" : {
+    "recordId" : {
+      "type" : "int",
+      "primaryKey" : true,
+      "autoIncrement" : true
+    },
+    "interal" : {
+      "type" :"int",
+      "default" : 0,
+      "comment" :"积分"
+    },
+    "way" : {
+      "type" : "enum",
+      "values" : ["充值", "打牌"],
+      "default" : "打牌"
+    },
+    "user" : {
+      "type": "object",
+      "belongsTo": "user"
+    },
+    "createTime" : {
+      "type" :"date",
+      "default" :"now"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "apis" : [{
+    "url" : "/user/sendSMSCode",
+    "method" : "user.sendSMSCode",
+    "transaction" : false
+  }, {
+    "url" : "/user/register",
+    "method" : "user.register"
+  }, {
+    "url" : "/user/login",
+    "method" : "user.login"
+  }, {
+    "url" : "/user/update",
+    "reql" : "update {user}"
+  },{
+    "url" : "/user/resetPassword",
+    "method" : "user.resetPassword"
+  },{
+    "url" : "/question/list",
+    "reql" : "query [question : {*}]",
+    "transaction" : false
+  },{
+    "url" : "/user/getUserInfoById",
+    "reql" : "query {user(userId = $userId) : {userId,name,phone,image,interal,lastLoginTime,registerTime}}",
+    "comment" : "根据用户Id获取用户信息"
+  },{
+    "url":"/record/getByUserId",
+    "reql":"query [record(page $page,$pageSize order createTime desc) : {*,user(userId=$userId):{userId,interal}}]",
+    "comment":"根据用户id获取用户积分记录"
+  },{
+    "url":"/record/getByUserId/count",
+    "reql":"count [record(page $page,$pageSize order createTime desc) : {*,user(userId=$userId):{*}}]",
+    "comment":"根据用户id获取用户积分记录数量"
+  }]
+}

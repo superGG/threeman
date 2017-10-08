@@ -1,0 +1,35 @@
+html,body{
+  height: 100%;
+  width: 100%;
+}
+
+body{
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f8f8
+}
+
+.register-bd,
+.login-bd{
+  flex: 1;
+}
+
+.register-ft,
+.login-ft{
+  margin: 20px;
+}
+
+.page .page__hd{
+    padding: 20px 15px;
+    font-size: 15px;
+}
+
+.page .page__hd .page__title{
+  font-size: 18px;
+  font-weight: normal;
+}
+
+.page__bd_spacing {
+  padding: 15px;
+}

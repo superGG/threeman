@@ -1,0 +1,6 @@
+{
+  "apis" : [{
+	"url" : "/upload",
+	"method" : "upload.common"
+  }]
+}

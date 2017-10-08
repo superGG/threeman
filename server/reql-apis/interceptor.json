@@ -1,0 +1,16 @@
+{
+  "interceptor" : {
+    "before" : [{
+      "url" : "*",
+      "method":"user.checkSystem"
+    },{
+      "url" : "*",
+      "method" : "user.checkToken"
+    }, {
+      "url" : "*",
+      "method" : "tool.check",
+      "comment" : "数据校验和填充"
+    }],
+    "after" : []
+  }
+}
